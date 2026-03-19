@@ -19,7 +19,7 @@ All visualizations are standalone HTML files. No build step, no dependencies —
 ### Prime Helix — 3D Visualization
 Primes on the helix with connecting chords. Drag to orbit, scroll to zoom, hover for values. Uses Three.js.
 
-![Prime Helix 3D](paper/prime_helix.png)
+![Prime Helix 3D](prime_helix.png)
 
 `prime_helix.html`
 
@@ -28,7 +28,7 @@ Primes on the helix with connecting chords. Drag to orbit, scroll to zoom, hover
 ### Chord Hopper vs Helix Walker
 The two-particle experiment. Shows the convergence of R(N) → 1/√2, local chord/arc ratios per gap, and summary metrics.
 
-![Convergence Dashboard](paper/fig_convergence.png)
+![Convergence Dashboard](fig_convergence.png)
 
 `prime_helix_ratio.html`
 
@@ -37,7 +37,7 @@ The two-particle experiment. Shows the convergence of R(N) → 1/√2, local cho
 ### Phasor Circle — Caustic Rings
 Projection of the prime helix onto the unit circle. Chords between consecutive primes form concentric caustic rings corresponding to prime gap frequencies.
 
-![Phasor Circle](paper/fig_phasor.png)
+![Phasor Circle](fig_phasor.png)
 
 `prime_phase_function.html` (left panel)
 
@@ -46,7 +46,7 @@ Projection of the prime helix onto the unit circle. Chords between consecutive p
 ### Prime Phase Function — θ(n) vs n
 The angular position of each prime on the phasor circle plotted against its index. Diagonal striations reveal runs of similar-sized gaps — a geometric spectrogram of the primes.
 
-![Phase Function](paper/fig_theta.png)
+![Phase Function](fig_theta.png)
 
 `prime_phase_function.html` (right panel)
 
@@ -59,13 +59,13 @@ The ratio of total chord path to displacement. Converges to 1, meaning the prime
 
 ## The Paper
 
-The `paper/` directory contains the LaTeX source and figures for the working paper:
+The LaTeX source and compiled PDF are included in the repository:
 
 > **The Prime Helix: A Geometric and Kinematic Translation of Prime Distribution Theory**
 
 The paper presents the construction, derives the chord length formula, defines the two-particle experiment, and draws tentative connections to the prime number theorem, Euler's product formula, the pole at s = 1, and the oscillatory corrections from zeta zeros. It is exploratory in nature — it does not prove new theorems, but proposes a complementary geometric perspective that may offer fresh intuition.
 
-To compile: upload `paper/prime_helix_paper.tex` and the figure PNGs to [Overleaf](https://overleaf.com), or compile locally with `pdflatex`.
+To compile: upload `prime_helix_paper.tex` and the figure PNGs to [Overleaf](https://overleaf.com), or compile locally with `pdflatex`.
 
 ## Key Results
 
@@ -83,16 +83,18 @@ This is an exploratory work. The convergence of R(N) follows from elementary ana
 ```
 prime-helix/
 ├── README.md
+├── LICENSE
+├── Prime Helix Paper.pdf         # Compiled paper
+├── prime_helix_paper.tex         # LaTeX source
+├── index.html                    # Landing page
 ├── prime_helix.html              # 3D helix visualization
 ├── prime_helix_ratio.html        # Two-particle convergence
 ├── prime_phase_function.html     # Phasor circle + phase function
 ├── prime_arc_vector.html         # Arc vector function F(n)
-└── paper/
-    ├── prime_helix_paper.tex     # LaTeX source
-    ├── prime_helix.png           # Figure 1: 3D helix
-    ├── fig_convergence.png       # Figure 2: R(N) convergence
-    ├── fig_phasor.png            # Figure 3: Caustic rings
-    └── fig_theta.png             # Figure 4: Phase function
+├── prime_helix.png               # Figure 1: 3D helix
+├── fig_convergence.png           # Figure 2: R(N) convergence
+├── fig_phasor.png                # Figure 3: Caustic rings
+└── fig_theta.png                 # Figure 4: Phase function
 ```
 
 ## License
