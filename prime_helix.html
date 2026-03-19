@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prime Helix — Primes on a Helical Number Line</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #e0ddd5;
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #canvas-container {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+  }
+
+  #ui-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 10;
+    padding: 24px;
+    pointer-events: none;
+  }
+
+  #ui-overlay > * { pointer-events: auto; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #f0ece2;
+    margin-bottom: 4px;
+    text-shadow: 0 0 40px rgba(180, 160, 255, 0.3);
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: #8a8578;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .controls {
+    background: rgba(15, 15, 22, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 16px 20px;
+    width: 300px;
+  }
+
+  .control-group {
+    margin-bottom: 14px;
+  }
+
+  .control-group:last-child { margin-bottom: 0; }
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #9a9590;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  label span.val {
+    color: #d4cfc5;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #b8a4ff;
+    box-shadow: 0 0 10px rgba(184,164,255,0.5);
+    cursor: pointer;
+  }
+
+  .toggle-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .toggle-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    background: transparent;
+    color: #8a8578;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-btn.active {
+    background: rgba(184,164,255,0.15);
+    border-color: rgba(184,164,255,0.4);
+    color: #c8b8ff;
+  }
+
+  .toggle-btn:hover {
+    border-color: rgba(184,164,255,0.3);
+  }
+
+  #info-panel {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 10;
+    background: rgba(15, 15, 22, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 12px;
+    color: #8a8578;
+    line-height: 1.7;
+    max-width: 340px;
+  }
+
+  #info-panel .highlight {
+    color: #c8b8ff;
+    font-weight: 600;
+  }
+
+  #stats {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10;
+    text-align: right;
+    font-size: 11px;
+    color: #5a5550;
+  }
+
+  .tooltip {
+    position: fixed;
+    z-index: 100;
+    background: rgba(10,10,18,0.95);
+    border: 1px solid rgba(184,164,255,0.3);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: #e0ddd5;
+    pointer-events: none;
+    display: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+
+  .tooltip .prime-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: #c8b8ff;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+
+<div id="ui-overlay">
+  <h1>Prime Helix</h1>
+  <div class="subtitle">Primes on a helical number line &middot; period 2&pi;</div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Primes shown <span class="val" id="count-val">1000</span></label>
+      <input type="range" id="prime-count" min="50" max="2000" value="1000" step="50">
+    </div>
+    <div class="control-group">
+      <label>Helix radius <span class="val" id="radius-val">1.0</span></label>
+      <input type="range" id="helix-radius" min="0.2" max="3" value="1" step="0.1">
+    </div>
+    <div class="control-group">
+      <label>Vertical scale <span class="val" id="vscale-val">0.05</span></label>
+      <input type="range" id="v-scale" min="0.005" max="0.2" value="0.05" step="0.005">
+    </div>
+    <div class="control-group">
+      <label>Display</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-layer="chords">Chords</button>
+        <button class="toggle-btn active" data-layer="points">Points</button>
+        <button class="toggle-btn" data-layer="helix">Helix wire</button>
+        <button class="toggle-btn" data-layer="gaps">Gap color</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="info-panel">
+  <span class="highlight">p(n)</span> &rarr; (cos p, sin p, p)<br>
+  Consecutive primes joined by straight chords.<br>
+  Scroll to zoom &middot; drag to orbit &middot; hover for values
+</div>
+
+<div id="stats"></div>
+
+<div class="tooltip" id="tooltip">
+  <div class="prime-num" id="tt-prime"></div>
+  <div id="tt-info"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// --- Prime sieve ---
+function sieve(max) {
+  const s = new Uint8Array(max + 1);
+  const primes = [];
+  for (let i = 2; i <= max; i++) {
+    if (!s[i]) {
+      primes.push(i);
+      for (let j = i * i; j <= max; j += i) s[j] = 1;
+    }
+  }
+  return primes;
+}
+
+const ALL_PRIMES = sieve(20000);
+
+// --- Three.js setup ---
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0f);
+scene.fog = new THREE.FogExp2(0x0a0a0f, 0.0015);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 5000);
+camera.position.set(4, 60, 12);
+camera.lookAt(0, 40, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+container.appendChild(renderer.domElement);
+
+// --- Orbit controls (manual) ---
+let isDragging = false, prevMouse = { x: 0, y: 0 };
+let spherical = { theta: 0.3, phi: 1.2, radius: 70 };
+let target = new THREE.Vector3(0, 40, 0);
+
+function updateCamera() {
+  const st = Math.sin(spherical.phi);
+  camera.position.set(
+    target.x + spherical.radius * st * Math.sin(spherical.theta),
+    target.y + spherical.radius * Math.cos(spherical.phi),
+    target.z + spherical.radius * st * Math.cos(spherical.theta)
+  );
+  camera.lookAt(target);
+}
+
+renderer.domElement.addEventListener('mousedown', e => { isDragging = true; prevMouse = { x: e.clientX, y: e.clientY }; });
+renderer.domElement.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - prevMouse.x, dy = e.clientY - prevMouse.y;
+  spherical.theta -= dx * 0.005;
+  spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - dy * 0.005));
+  prevMouse = { x: e.clientX, y: e.clientY };
+  updateCamera();
+});
+renderer.domElement.addEventListener('mouseup', () => isDragging = false);
+renderer.domElement.addEventListener('mouseleave', () => isDragging = false);
+renderer.domElement.addEventListener('wheel', e => {
+  spherical.radius = Math.max(5, Math.min(300, spherical.radius + e.deltaY * 0.05));
+  updateCamera();
+}, { passive: true });
+
+// Touch support
+renderer.domElement.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) { isDragging = true; prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }
+}, { passive: true });
+renderer.domElement.addEventListener('touchmove', e => {
+  if (!isDragging || e.touches.length !== 1) return;
+  const dx = e.touches[0].clientX - prevMouse.x, dy = e.touches[0].clientY - prevMouse.y;
+  spherical.theta -= dx * 0.005;
+  spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - dy * 0.005));
+  prevMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  updateCamera();
+}, { passive: true });
+renderer.domElement.addEventListener('touchend', () => isDragging = false);
+
+updateCamera();
+
+// --- Scene objects ---
+let pointsMesh, chordsMesh, helixMesh;
+let primePositions = [];
+let layers = { chords: true, points: true, helix: false, gaps: false };
+
+// Configuration
+let config = {
+  count: 1000,
+  radius: 1.0,
+  vscale: 0.05
+};
+
+function primeToPos(p) {
+  return new THREE.Vector3(
+    config.radius * Math.cos(p),
+    p * config.vscale,
+    config.radius * Math.sin(p)
+  );
+}
+
+function buildScene() {
+  if (pointsMesh) scene.remove(pointsMesh);
+  if (chordsMesh) scene.remove(chordsMesh);
+  if (helixMesh) scene.remove(helixMesh);
+
+  const primes = ALL_PRIMES.slice(0, config.count);
+  primePositions = primes.map(p => ({ prime: p, pos: primeToPos(p) }));
+
+  // --- Points ---
+  const pointGeo = new THREE.BufferGeometry();
+  const pVerts = new Float32Array(primes.length * 3);
+  const pColors = new Float32Array(primes.length * 3);
+
+  for (let i = 0; i < primes.length; i++) {
+    const pos = primePositions[i].pos;
+    pVerts[i * 3] = pos.x;
+    pVerts[i * 3 + 1] = pos.y;
+    pVerts[i * 3 + 2] = pos.z;
+
+    // Color by gap to next prime
+    let hue = 0.72; // default violet
+    if (layers.gaps && i < primes.length - 1) {
+      const gap = primes[i + 1] - primes[i];
+      hue = Math.max(0.0, 0.72 - gap * 0.035);
+    }
+    const col = new THREE.Color().setHSL(hue, 0.7, 0.65);
+    pColors[i * 3] = col.r;
+    pColors[i * 3 + 1] = col.g;
+    pColors[i * 3 + 2] = col.b;
+  }
+
+  pointGeo.setAttribute('position', new THREE.BufferAttribute(pVerts, 3));
+  pointGeo.setAttribute('color', new THREE.BufferAttribute(pColors, 3));
+  const pointMat = new THREE.PointsMaterial({ size: 0.5, vertexColors: true, sizeAttenuation: true, transparent: true, opacity: 0.9 });
+  pointsMesh = new THREE.Points(pointGeo, pointMat);
+  pointsMesh.visible = layers.points;
+  scene.add(pointsMesh);
+
+  // --- Chords ---
+  const chordVerts = [];
+  const chordColors = [];
+  for (let i = 0; i < primePositions.length - 1; i++) {
+    const a = primePositions[i], b = primePositions[i + 1];
+    chordVerts.push(a.pos.x, a.pos.y, a.pos.z, b.pos.x, b.pos.y, b.pos.z);
+
+    let hue = 0.72;
+    if (layers.gaps) {
+      const gap = b.prime - a.prime;
+      hue = Math.max(0.0, 0.72 - gap * 0.035);
+    }
+    const col = new THREE.Color().setHSL(hue, 0.5, 0.45);
+    chordColors.push(col.r, col.g, col.b, col.r, col.g, col.b);
+  }
+
+  const chordGeo = new THREE.BufferGeometry();
+  chordGeo.setAttribute('position', new THREE.Float32BufferAttribute(chordVerts, 3));
+  chordGeo.setAttribute('color', new THREE.Float32BufferAttribute(chordColors, 3));
+  const chordMat = new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.55 });
+  chordsMesh = new THREE.LineSegments(chordGeo, chordMat);
+  chordsMesh.visible = layers.chords;
+  scene.add(chordsMesh);
+
+  // --- Helix wire ---
+  const helixVerts = [];
+  const maxP = primes[primes.length - 1];
+  const step = 0.3;
+  for (let t = 0; t <= maxP; t += step) {
+    helixVerts.push(
+      config.radius * Math.cos(t),
+      t * config.vscale,
+      config.radius * Math.sin(t)
+    );
+  }
+  const helixGeo = new THREE.BufferGeometry();
+  helixGeo.setAttribute('position', new THREE.Float32BufferAttribute(helixVerts, 3));
+  const helixMat = new THREE.LineBasicMaterial({ color: 0x2a2a35, transparent: true, opacity: 0.3 });
+  helixMesh = new THREE.Line(helixGeo, helixMat);
+  helixMesh.visible = layers.helix;
+  scene.add(helixMesh);
+
+  // Update target
+  const midY = (primes[primes.length - 1] * config.vscale) / 2;
+  target.set(0, midY, 0);
+  updateCamera();
+
+  // Stats
+  const maxGap = primes.reduce((mx, p, i) => i > 0 ? Math.max(mx, p - primes[i - 1]) : mx, 0);
+  const avgGap = ((primes[primes.length - 1] - primes[0]) / (primes.length - 1)).toFixed(2);
+  document.getElementById('stats').innerHTML =
+    `${primes.length} primes &middot; largest: ${primes[primes.length - 1]}<br>` +
+    `max gap: ${maxGap} &middot; avg gap: ${avgGap}`;
+}
+
+// --- Tooltip / raycasting ---
+const raycaster = new THREE.Raycaster();
+raycaster.params.Points.threshold = 0.4;
+const mouse = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
+
+renderer.domElement.addEventListener('mousemove', e => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+  if (pointsMesh && pointsMesh.visible) {
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObject(pointsMesh);
+    if (hits.length > 0) {
+      const idx = hits[0].index;
+      const pp = primePositions[idx];
+      tooltip.style.display = 'block';
+      tooltip.style.left = (e.clientX + 16) + 'px';
+      tooltip.style.top = (e.clientY - 10) + 'px';
+      document.getElementById('tt-prime').textContent = pp.prime;
+      const gap = idx < primePositions.length - 1 ? primePositions[idx + 1].prime - pp.prime : '—';
+      const prevGap = idx > 0 ? pp.prime - primePositions[idx - 1].prime : '—';
+      const angle = (pp.prime % (2 * Math.PI)).toFixed(3);
+      document.getElementById('tt-info').innerHTML =
+        `#${idx + 1} &middot; angle ${angle} rad<br>gap prev: ${prevGap} &middot; next: ${gap}`;
+    } else {
+      tooltip.style.display = 'none';
+    }
+  }
+});
+
+// --- Controls ---
+document.getElementById('prime-count').addEventListener('input', function() {
+  config.count = +this.value;
+  document.getElementById('count-val').textContent = this.value;
+  buildScene();
+});
+
+document.getElementById('helix-radius').addEventListener('input', function() {
+  config.radius = +this.value;
+  document.getElementById('radius-val').textContent = this.value;
+  buildScene();
+});
+
+document.getElementById('v-scale').addEventListener('input', function() {
+  config.vscale = +this.value;
+  document.getElementById('vscale-val').textContent = this.value;
+  buildScene();
+});
+
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const layer = this.dataset.layer;
+    this.classList.toggle('active');
+    layers[layer] = this.classList.contains('active');
+    if (layer === 'gaps') {
+      buildScene();
+    } else {
+      if (layer === 'chords' && chordsMesh) chordsMesh.visible = layers.chords;
+      if (layer === 'points' && pointsMesh) pointsMesh.visible = layers.points;
+      if (layer === 'helix' && helixMesh) helixMesh.visible = layers.helix;
+    }
+  });
+});
+
+// --- Animate ---
+let autoRotate = true;
+renderer.domElement.addEventListener('mousedown', () => autoRotate = false);
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (autoRotate) {
+    spherical.theta += 0.002;
+    updateCamera();
+  }
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+buildScene();
+animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prime Helix — Chord Hopper vs Helix Walker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #e0ddd5;
+    font-family: 'JetBrains Mono', monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  header { padding: 18px 28px 0; flex-shrink: 0; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ece2;
+    text-shadow: 0 0 40px rgba(180, 160, 255, 0.3);
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: #8a8578;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 28px 18px;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .row { display: flex; gap: 12px; min-height: 0; }
+  .row.top { flex-shrink: 0; }
+  .row.bottom { flex: 1; }
+
+  .panel {
+    background: rgba(15, 15, 22, 0.7);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .panel-title {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a8578;
+    padding: 12px 16px 6px;
+    flex-shrink: 0;
+  }
+
+  .big-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    color: #c8b8ff;
+    font-weight: 700;
+    padding: 0 16px;
+    line-height: 1.1;
+  }
+
+  .big-number.warm { color: #ffb87a; }
+  .big-number.cool { color: #7ae0ff; }
+  .big-number.green { color: #8bffb0; }
+
+  .big-label {
+    font-size: 10px;
+    color: #6a6560;
+    padding: 4px 16px 10px;
+    letter-spacing: 1px;
+  }
+
+  .canvas-wrap {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    padding: 4px 8px 8px;
+  }
+
+  canvas { display: block; width: 100% !important; height: 100% !important; }
+
+  .metric-panel {
+    background: rgba(15, 15, 22, 0.7);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 12px 16px;
+    flex: 1;
+  }
+
+  .controls-bar {
+    padding: 8px 28px 4px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .ctrl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ctrl label {
+    font-size: 10px;
+    color: #8a8578;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .ctrl input[type="range"] {
+    -webkit-appearance: none;
+    width: 180px;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .ctrl input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #b8a4ff;
+    box-shadow: 0 0 8px rgba(184,164,255,0.4);
+  }
+
+  .val {
+    font-size: 12px;
+    color: #c8b8ff;
+    font-weight: 600;
+    min-width: 40px;
+  }
+
+  .formula-box {
+    background: rgba(184,164,255,0.06);
+    border: 1px solid rgba(184,164,255,0.15);
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin: 0 28px 2px;
+    font-size: 11.5px;
+    color: #b0a89d;
+    line-height: 1.9;
+    flex-shrink: 0;
+  }
+
+  .formula-box .math { color: #c8b8ff; font-weight: 600; }
+  .formula-box .warm { color: #ffb87a; font-weight: 600; }
+  .formula-box .cool { color: #7ae0ff; font-weight: 600; }
+
+  .tooltip {
+    position: fixed;
+    z-index: 100;
+    background: rgba(10,10,18,0.95);
+    border: 1px solid rgba(184,164,255,0.3);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: #e0ddd5;
+    pointer-events: none;
+    display: none;
+  }
+
+  .insight-box {
+    background: rgba(139,255,176,0.06);
+    border: 1px solid rgba(139,255,176,0.15);
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin: 0 28px 2px;
+    font-size: 11.5px;
+    color: #a0b8a8;
+    line-height: 1.7;
+    flex-shrink: 0;
+  }
+
+  .insight-box strong { color: #8bffb0; }
+
+  @media (max-width: 750px) {
+    .row { flex-direction: column; }
+    .big-number { font-size: 26px; }
+    .row.top { gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Chord Hopper vs Helix Walker</h1>
+  <div class="subtitle">Pure chord jumps between primes vs continuous helix travel</div>
+</header>
+
+<div class="formula-box">
+  <span class="warm">A (helix)</span>: total arc = (p<sub>N</sub> − p<sub>1</sub>) × √2 &nbsp;&nbsp;|&nbsp;&nbsp;
+  <span class="cool">B (chord hopper)</span>: total = Σ √(2 − 2cos(g<sub>n</sub>) + g<sub>n</sub>²) &nbsp;&nbsp;|&nbsp;&nbsp;
+  <span class="math">R(N) = B / A</span>
+</div>
+
+<div class="controls-bar">
+  <div class="ctrl">
+    <label>Primes</label>
+    <input type="range" id="count" min="100" max="8000" value="2000" step="100">
+    <span class="val" id="count-val">2000</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="row top">
+    <div class="metric-panel">
+      <div class="panel-title">Ratio R(N) = B / A</div>
+      <div class="big-number" id="ratio-val">—</div>
+      <div class="big-label" id="ratio-label"></div>
+    </div>
+    <div class="metric-panel">
+      <div class="panel-title">A — Helix Walker</div>
+      <div class="big-number warm" id="helix-dist">—</div>
+      <div class="big-label">continuous arc length</div>
+    </div>
+    <div class="metric-panel">
+      <div class="panel-title">B — Chord Hopper</div>
+      <div class="big-number cool" id="chord-dist">—</div>
+      <div class="big-label">sum of straight jumps</div>
+    </div>
+    <div class="metric-panel">
+      <div class="panel-title">Shortcut</div>
+      <div class="big-number green" id="saved-pct">—</div>
+      <div class="big-label">distance saved by hopping</div>
+    </div>
+  </div>
+
+  <div class="row bottom">
+    <div class="panel" style="flex: 5;">
+      <div class="panel-title">R(N) = Σ chords / helix arc — does it converge?</div>
+      <div class="canvas-wrap"><canvas id="ratio-canvas"></canvas></div>
+    </div>
+    <div class="panel" style="flex: 3;">
+      <div class="panel-title">Local chord / arc ratio per gap (colored by gap size)</div>
+      <div class="canvas-wrap"><canvas id="local-canvas"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="insight-box" id="insight">
+  <strong>Analyzing convergence...</strong>
+</div>
+
+<div class="tooltip" id="tooltip"><div id="tt-content"></div></div>
+
+<script>
+function sieve(max) {
+  const s = new Uint8Array(max + 1), p = [];
+  for (let i = 2; i <= max; i++) {
+    if (!s[i]) { p.push(i); for (let j = i * i; j <= max; j += i) s[j] = 1; }
+  }
+  return p;
+}
+
+const ALL_PRIMES = sieve(100000);
+const SQRT2 = Math.sqrt(2);
+
+let primeCount = 2000;
+
+function chordLen(g) {
+  return Math.sqrt(2 - 2 * Math.cos(g) + g * g);
+}
+
+function compute(N) {
+  const primes = ALL_PRIMES.slice(0, N);
+  const gaps = [], localRatios = [], cumRatios = [];
+  let totalChord = 0;
+
+  for (let i = 0; i < primes.length - 1; i++) {
+    const g = primes[i + 1] - primes[i];
+    gaps.push(g);
+    const cl = chordLen(g);
+    totalChord += cl;
+
+    // Helix arc from p1 to current p(n+1)
+    const helixTotal = (primes[i + 1] - primes[0]) * SQRT2;
+    cumRatios.push(totalChord / helixTotal);
+
+    // Local ratio: chord vs helix arc for this single gap
+    const localArc = g * SQRT2;
+    localRatios.push(cl / localArc);
+  }
+
+  const totalHelix = (primes[primes.length - 1] - primes[0]) * SQRT2;
+
+  return { primes, gaps, localRatios, cumRatios, totalHelix, totalChord };
+}
+
+function setupCanvas(id) {
+  const c = document.getElementById(id);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  function resize() {
+    const rect = c.parentElement.getBoundingClientRect();
+    c.width = rect.width * dpr;
+    c.height = rect.height * dpr;
+  }
+  resize();
+  return { canvas: c, ctx: c.getContext('2d'), dpr, resize, size: () => ({ w: c.width / dpr, h: c.height / dpr }) };
+}
+
+const ratioC = setupCanvas('ratio-canvas');
+const localC = setupCanvas('local-canvas');
+
+function drawRatio(data) {
+  const { ctx, dpr, size } = ratioC;
+  const { w, h } = size();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  const { cumRatios } = data;
+  const N = cumRatios.length;
+  if (N < 2) return;
+
+  const pL = 68, pR = 24, pT = 16, pB = 38;
+  const pW = w - pL - pR, pH = h - pT - pB;
+
+  // Dynamic y range
+  const allVals = cumRatios;
+  const margin = 0.002;
+  let yMin = Math.min(...allVals) - margin;
+  let yMax = Math.max(...allVals) + margin;
+
+  // Zoom into last 80% for better convergence visibility
+  const tail = cumRatios.slice(Math.floor(N * 0.1));
+  const tailMin = Math.min(...tail) - 0.0008;
+  const tailMax = Math.max(...tail) + 0.0008;
+
+  // Grid
+  ctx.font = '10px JetBrains Mono';
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#5a5550';
+  const ticks = 6;
+  for (let i = 0; i <= ticks; i++) {
+    const v = yMin + (yMax - yMin) * (i / ticks);
+    const y = pT + pH - (i / ticks) * pH;
+    ctx.beginPath(); ctx.moveTo(pL, y); ctx.lineTo(pL + pW, y);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillText(v.toFixed(5), pL - 6, y + 4);
+  }
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#5a5550';
+  ctx.fillText('N (prime index)', pL + pW / 2, pT + pH + 30);
+
+  // X axis ticks
+  const xTicks = 5;
+  for (let i = 0; i <= xTicks; i++) {
+    const idx = Math.floor((i / xTicks) * (N - 1));
+    const x = pL + (idx / (N - 1)) * pW;
+    ctx.fillText(idx + 1, x, pT + pH + 16);
+  }
+
+  // Convergence dashed line at final value
+  const final = cumRatios[N - 1];
+  const fy = pT + pH - ((final - yMin) / (yMax - yMin)) * pH;
+  ctx.beginPath(); ctx.moveTo(pL, fy); ctx.lineTo(pL + pW, fy);
+  ctx.strokeStyle = 'rgba(184,164,255,0.25)'; ctx.setLineDash([5, 4]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+
+  // Main curve
+  ctx.beginPath();
+  for (let i = 0; i < N; i++) {
+    const x = pL + (i / (N - 1)) * pW;
+    const y = pT + pH - ((cumRatios[i] - yMin) / (yMax - yMin)) * pH;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = '#c8b8ff'; ctx.lineWidth = 2.5; ctx.stroke();
+
+  // Glow effect
+  ctx.strokeStyle = 'rgba(184,164,255,0.15)'; ctx.lineWidth = 8;
+  ctx.beginPath();
+  for (let i = 0; i < N; i++) {
+    const x = pL + (i / (N - 1)) * pW;
+    const y = pT + pH - ((cumRatios[i] - yMin) / (yMax - yMin)) * pH;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Final value label
+  ctx.fillStyle = '#c8b8ff'; ctx.font = '600 14px JetBrains Mono'; ctx.textAlign = 'right';
+  ctx.fillText(`→ ${final.toFixed(6)}`, pL + pW - 4, fy - 14);
+
+  // Variance in last 10%
+  const last10 = cumRatios.slice(Math.floor(N * 0.9));
+  const l10min = Math.min(...last10), l10max = Math.max(...last10);
+  const band = l10max - l10min;
+  ctx.font = '10px JetBrains Mono'; ctx.fillStyle = '#6a6560';
+  ctx.fillText(`last 10% band: ${band.toExponential(3)}`, pL + pW - 4, fy - 30);
+}
+
+function drawLocal(data) {
+  const { ctx, dpr, size } = localC;
+  const { w, h } = size();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  const { localRatios, gaps } = data;
+  const N = localRatios.length;
+  if (N < 2) return;
+
+  const pL = 44, pR = 34, pT = 16, pB = 38;
+  const pW = w - pL - pR, pH = h - pT - pB;
+  const yMin = 0.55, yMax = 1.02;
+
+  ctx.font = '10px JetBrains Mono'; ctx.fillStyle = '#5a5550'; ctx.textAlign = 'right';
+  for (let v = 0.6; v <= 1.0; v += 0.1) {
+    const y = pT + pH - ((v - yMin) / (yMax - yMin)) * pH;
+    ctx.beginPath(); ctx.moveTo(pL, y); ctx.lineTo(pL + pW, y);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillText(v.toFixed(1), pL - 6, y + 4);
+  }
+
+  ctx.textAlign = 'center';
+  ctx.fillText('n', pL + pW / 2, pT + pH + 30);
+
+  // Points
+  for (let i = 0; i < N; i++) {
+    const x = pL + (i / (N - 1)) * pW;
+    const r = Math.min(localRatios[i], yMax);
+    const y = pT + pH - ((r - yMin) / (yMax - yMin)) * pH;
+    const hue = Math.max(0, Math.min(300, 260 - gaps[i] * 10));
+    ctx.beginPath(); ctx.arc(x, y, 1.4, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${hue},60%,55%,0.5)`; ctx.fill();
+  }
+
+  // Gap reference lines
+  ctx.font = '9px JetBrains Mono'; ctx.textAlign = 'left';
+  [2, 4, 6, 8, 12, 20].forEach(g => {
+    const lr = chordLen(g) / (g * SQRT2);
+    if (lr < yMin || lr > yMax) return;
+    const y = pT + pH - ((lr - yMin) / (yMax - yMin)) * pH;
+    ctx.beginPath(); ctx.moveTo(pL, y); ctx.lineTo(pL + pW, y);
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)'; ctx.setLineDash([2,3]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#6a6560';
+    ctx.fillText(`g=${g}`, pL + pW + 3, y + 3);
+  });
+}
+
+function updateInsight(data) {
+  const { cumRatios } = data;
+  const N = cumRatios.length;
+  const final = cumRatios[N - 1];
+
+  // Measure convergence: variance in last 10% vs first 10%
+  const chunk = Math.max(10, Math.floor(N * 0.1));
+  const early = cumRatios.slice(0, chunk);
+  const late = cumRatios.slice(-chunk);
+  const earlyRange = Math.max(...early) - Math.min(...early);
+  const lateRange = Math.max(...late) - Math.min(...late);
+  const narrowing = earlyRange / Math.max(lateRange, 1e-10);
+
+  let msg = '';
+  if (lateRange < 0.001) {
+    msg = `<strong>Strong convergence detected.</strong> R(N) → ${final.toFixed(6)}. ` +
+      `The band in the last 10% is only ${lateRange.toExponential(2)}, ` +
+      `${narrowing.toFixed(1)}× narrower than the first 10%. ` +
+      `The chord hopper saves ~${((1 - final) * 100).toFixed(2)}% distance vs the helix walker.`;
+  } else {
+    msg = `<strong>Converging.</strong> Current R(N) ≈ ${final.toFixed(6)}, band still ${lateRange.toExponential(2)}. ` +
+      `Try increasing prime count for tighter convergence.`;
+  }
+
+  document.getElementById('insight').innerHTML = msg;
+}
+
+function update() {
+  const data = compute(primeCount);
+  const R = data.cumRatios[data.cumRatios.length - 1];
+
+  document.getElementById('ratio-val').textContent = R.toFixed(6);
+  document.getElementById('ratio-label').textContent = `after ${primeCount} primes`;
+  document.getElementById('helix-dist').textContent = Math.round(data.totalHelix).toLocaleString();
+  document.getElementById('chord-dist').textContent = Math.round(data.totalChord).toLocaleString();
+  document.getElementById('saved-pct').textContent = ((1 - R) * 100).toFixed(2) + '%';
+
+  drawRatio(data);
+  drawLocal(data);
+  updateInsight(data);
+}
+
+// Controls
+document.getElementById('count').addEventListener('input', function() {
+  primeCount = +this.value;
+  document.getElementById('count-val').textContent = this.value;
+  update();
+});
+
+// Tooltip
+const ttEl = document.getElementById('tooltip');
+ratioC.canvas.addEventListener('mousemove', function(e) {
+  const rect = this.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const { w } = ratioC.size();
+  const pL = 68, pR = 24;
+  const pW = w - pL - pR;
+  const data = compute(primeCount);
+  const N = data.cumRatios.length;
+  const idx = Math.round(((mx - pL) / pW) * (N - 1));
+  if (idx >= 0 && idx < N) {
+    ttEl.style.display = 'block';
+    ttEl.style.left = (e.clientX + 16) + 'px';
+    ttEl.style.top = (e.clientY - 10) + 'px';
+    document.getElementById('tt-content').innerHTML =
+      `<strong style="color:#c8b8ff">R(${idx + 1}) = ${data.cumRatios[idx].toFixed(6)}</strong><br>` +
+      `p<sub>${idx + 2}</sub> = ${data.primes[idx + 1]}, gap = ${data.gaps[idx]}<br>` +
+      `local r = ${data.localRatios[idx].toFixed(4)}`;
+  } else {
+    ttEl.style.display = 'none';
+  }
+});
+
+document.addEventListener('mousemove', e => {
+  if (!e.target.closest('canvas')) ttEl.style.display = 'none';
+});
+
+window.addEventListener('resize', () => {
+  setTimeout(() => { ratioC.resize(); localC.resize(); update(); }, 100);
+});
+
+update();
+</script>
+</body>
+</html>
