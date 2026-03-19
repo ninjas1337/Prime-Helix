@@ -2,7 +2,7 @@
 
 **A geometric exploration of prime distribution on Euler's helix — two particles, one ratio, and a different way to look at the Riemann zeta function.**
 
-ninjas1337.github.io/prime-helix/
+https://ninjas1337.github.io/prime-helix/
 ---
 
 ## What is this?
