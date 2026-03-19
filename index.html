@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prime Helix — Primes on Euler's Helix</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #e0ddd5;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    padding: 80px 40px 50px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(184,164,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero > * { position: relative; z-index: 1; }
+
+  .euler {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 18px;
+    color: #8a8578;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+
+  .euler span { color: #c8b8ff; font-style: normal; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px;
+    font-weight: 700;
+    color: #f0ece2;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    text-shadow: 0 0 60px rgba(180, 160, 255, 0.2);
+  }
+
+  .tagline {
+    font-size: 13px;
+    color: #8a8578;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #9a9590;
+    max-width: 640px;
+    margin: 0 auto 24px;
+    text-align: left;
+  }
+
+  .description em { color: #c8b8ff; font-style: normal; font-weight: 600; }
+
+  .paper-link {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a8578;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px 24px;
+    text-decoration: none;
+    transition: all 0.3s;
+    margin-top: 8px;
+  }
+
+  .paper-link:hover {
+    border-color: rgba(184,164,255,0.4);
+    color: #c8b8ff;
+    background: rgba(184,164,255,0.06);
+  }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 50px auto 50px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #6a6560;
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .grid {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 40px 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .card {
+    background: rgba(15, 15, 22, 0.7);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card:hover {
+    border-color: rgba(184,164,255,0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .card-img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    display: block;
+    opacity: 0.85;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover .card-img { opacity: 1; }
+
+  .card-body {
+    padding: 18px 20px 22px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #f0ece2;
+    margin-bottom: 6px;
+  }
+
+  .card-desc {
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: #8a8578;
+    flex: 1;
+  }
+
+  .card-tag {
+    margin-top: 12px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #c8b8ff;
+    opacity: 0.6;
+  }
+
+  .card:hover .card-tag { opacity: 1; }
+
+  .card-noimg {
+    padding: 28px 24px;
+  }
+
+  .card-noimg .card-title { margin-bottom: 10px; }
+
+  .footer {
+    text-align: center;
+    padding: 0 40px 50px;
+    font-size: 11px;
+    color: #5a5550;
+    line-height: 1.8;
+  }
+
+  .footer a { color: #8a8578; text-decoration: none; }
+  .footer a:hover { color: #c8b8ff; }
+
+  .formula-bar {
+    max-width: 720px;
+    margin: 0 auto 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #6a6560;
+    line-height: 2;
+  }
+
+  .formula-bar .m { color: #c8b8ff; font-weight: 600; }
+
+  @media (max-width: 700px) {
+    .hero { padding: 50px 24px 30px; }
+    h1 { font-size: 34px; }
+    .grid { grid-template-columns: 1fr; padding: 0 24px 60px; }
+    .description { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="euler"><span>e<sup>iθ</sup></span> = cos θ + i sin θ</div>
+  <h1>Prime Helix</h1>
+  <div class="tagline">Primes on Euler's helix &middot; a geometric exploration</div>
+
+  <p class="description">
+    Euler's identity, read as a three-dimensional object, is a helix. This project places the
+    prime numbers on that helix, connects consecutive primes with straight-line chords, and asks
+    a simple kinematic question: if two particles travel at the same speed — one along the helix,
+    the other hopping chord to chord between primes — <em>what is the ratio of their paths?</em>
+  </p>
+  <p class="description">
+    The answer converges to <em>1/√2 = cos(45°)</em>, determined by the helix geometry alone.
+    The fluctuations around that limit carry information about prime gaps, and appear to
+    reflect — in purely geometric terms — the same phenomena captured by the Riemann zeta function.
+  </p>
+
+  <div class="formula-bar">
+    <span class="m">d<sub>n</sub></span> = √(2 − 2cos(g<sub>n</sub>) + g<sub>n</sub>²)
+    &nbsp;&nbsp;|&nbsp;&nbsp;
+    <span class="m">R(N)</span> = Σd<sub>n</sub> / (p<sub>N</sub> − 2)√2
+    &nbsp;&nbsp;→&nbsp;&nbsp;
+    <span class="m">1/√2</span>
+  </div>
+
+  <a href="Prime Helix Paper.pdf" class="paper-link">Read the paper ↗</a>
+</div>
+
+<div class="divider"></div>
+<div class="section-label">Interactive Visualizations</div>
+
+<div class="grid">
+  <a href="prime_helix.html" class="card">
+    <img src="prime_helix.png" alt="3D Prime Helix" class="card-img">
+    <div class="card-body">
+      <div class="card-title">Prime Helix — 3D</div>
+      <div class="card-desc">
+        Primes embedded on the helix (cos p, sin p, p) with connecting chords.
+        Drag to orbit, scroll to zoom, hover for values. Gap coloring reveals
+        the irregular rhythm of prime spacing.
+      </div>
+      <div class="card-tag">Three.js &middot; Interactive</div>
+    </div>
+  </a>
+
+  <a href="prime_helix_ratio.html" class="card">
+    <img src="fig_convergence.png" alt="Convergence Dashboard" class="card-img">
+    <div class="card-body">
+      <div class="card-title">Chord Hopper vs Helix Walker</div>
+      <div class="card-desc">
+        The two-particle experiment. Watch R(N) converge toward 1/√2 as you
+        increase the prime count. The local ratio scatter reveals how each
+        gap size contributes to the cumulative ratio.
+      </div>
+      <div class="card-tag">Convergence &middot; Up to 8000 primes</div>
+    </div>
+  </a>
+
+  <a href="prime_phase_function.html" class="card">
+    <img src="fig_phasor.png" alt="Phasor Circle" class="card-img">
+    <div class="card-body">
+      <div class="card-title">Phasor Circle &amp; Phase Function</div>
+      <div class="card-desc">
+        Dual view: the prime helix projected onto the unit circle (revealing
+        caustic rings from prime gap harmonics) and θ(n) = p<sub>n</sub> mod 2π
+        plotted against n (revealing diagonal striations — a geometric spectrogram).
+      </div>
+      <div class="card-tag">Caustic rings &middot; Up to 10000 primes</div>
+    </div>
+  </a>
+
+  <a href="prime_arc_vector.html" class="card">
+    <div class="card-body card-noimg">
+      <div class="card-title">Arc Vector Function — F(n)</div>
+      <div class="card-desc">
+        The ratio of total chord path to displacement: F(n) = S(n) / |D(n)|.
+        Converges to 1, meaning the prime chord path through 3D space is
+        asymptotically straight. Also shows π(x) vs Li(x) and the
+        deviation term F(n) − 1.
+      </div>
+      <div class="card-tag">Path analysis &middot; Up to 8000 primes</div>
+    </div>
+  </a>
+</div>
+
+<div class="footer">
+  Working paper — March 2026<br>
+  <a href="https://github.com">View on GitHub</a> &nbsp;&middot;&nbsp;
+  <a href="Prime Helix Paper.pdf">Download paper (PDF)</a>
+</div>
+
+</body>
+</html>
