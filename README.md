@@ -16,13 +16,46 @@ The answer converges to $1/\sqrt{2} = \cos(45°)$, determined by the helix geome
 
 All visualizations are standalone HTML files. No build step, no dependencies — just open them in a browser.
 
-| File | Description |
-|------|-------------|
-| `prime_helix.html` | 3D visualization of primes on the helix with connecting chords. Drag to orbit, scroll to zoom, hover for values. Uses Three.js. |
-| `prime_helix_ratio.html` | The two-particle experiment. Shows the convergence of R(N) → 1/√2, local chord/arc ratios per gap, and summary metrics. |
-| `prime_phase_function.html` | Dual panel: phasor circle projection (showing caustic rings) and the phase function θ(n) = pₙ mod 2π (showing diagonal striations). |
-| `prime_arc_vector.html` | The arc vector function F(n) = path/displacement, its convergence to 1, and π(x) vs Li(x) comparison. |
+### Prime Helix — 3D Visualization
+Primes on the helix with connecting chords. Drag to orbit, scroll to zoom, hover for values. Uses Three.js.
 
+![Prime Helix 3D](paper/prime_helix.png)
+
+`prime_helix.html`
+
+---
+
+### Chord Hopper vs Helix Walker
+The two-particle experiment. Shows the convergence of R(N) → 1/√2, local chord/arc ratios per gap, and summary metrics.
+
+![Convergence Dashboard](paper/fig_convergence.png)
+
+`prime_helix_ratio.html`
+
+---
+
+### Phasor Circle — Caustic Rings
+Projection of the prime helix onto the unit circle. Chords between consecutive primes form concentric caustic rings corresponding to prime gap frequencies.
+
+![Phasor Circle](paper/fig_phasor.png)
+
+`prime_phase_function.html` (left panel)
+
+---
+
+### Prime Phase Function — θ(n) vs n
+The angular position of each prime on the phasor circle plotted against its index. Diagonal striations reveal runs of similar-sized gaps — a geometric spectrogram of the primes.
+
+![Phase Function](paper/fig_theta.png)
+
+`prime_phase_function.html` (right panel)
+
+---
+
+### Arc Vector Function — F(n)
+The ratio of total chord path to displacement. Converges to 1, meaning the prime chord path is asymptotically straight.
+
+`prime_arc_vector.html`
 
 ## The Paper
 
@@ -32,6 +65,7 @@ The `paper/` directory contains the LaTeX source and figures for the working pap
 
 The paper presents the construction, derives the chord length formula, defines the two-particle experiment, and draws tentative connections to the prime number theorem, Euler's product formula, the pole at s = 1, and the oscillatory corrections from zeta zeros. It is exploratory in nature — it does not prove new theorems, but proposes a complementary geometric perspective that may offer fresh intuition.
 
+To compile: upload `paper/prime_helix_paper.tex` and the figure PNGs to [Overleaf](https://overleaf.com), or compile locally with `pdflatex`.
 
 ## Key Results
 
