@@ -23,6 +23,7 @@ All visualizations are standalone HTML files. No build step, no dependencies —
 | `prime_phase_function.html` | Dual panel: phasor circle projection (showing caustic rings) and the phase function θ(n) = pₙ mod 2π (showing diagonal striations). |
 | `prime_arc_vector.html` | The arc vector function F(n) = path/displacement, its convergence to 1, and π(x) vs Li(x) comparison. |
 
+
 ## The Paper
 
 The `paper/` directory contains the LaTeX source and figures for the working paper:
