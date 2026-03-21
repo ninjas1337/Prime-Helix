@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Prime Helix — Riemann Vortex</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    color: #e0ddd5;
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  #canvas-container {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+  }
+
+  #ui-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 10;
+    padding: 24px;
+    pointer-events: none;
+  }
+
+  #ui-overlay > * { pointer-events: auto; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ece2;
+    margin-bottom: 4px;
+    text-shadow: 0 0 40px rgba(180, 160, 255, 0.3);
+  }
+
+  .subtitle {
+    font-size: 11px;
+    color: #8a8578;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .controls {
+    background: rgba(15, 15, 22, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 14px 18px;
+    width: 290px;
+  }
+
+  .control-group { margin-bottom: 12px; }
+  .control-group:last-child { margin-bottom: 0; }
+
+  label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: #9a9590;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  label span.val {
+    color: #d4cfc5;
+    font-weight: 600;
+    text-transform: none;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #b8a4ff;
+    box-shadow: 0 0 8px rgba(184,164,255,0.4);
+  }
+
+  .toggle-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .toggle-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 11px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    background: transparent;
+    color: #8a8578;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-btn.active {
+    background: rgba(184,164,255,0.15);
+    border-color: rgba(184,164,255,0.4);
+    color: #c8b8ff;
+  }
+
+  #info-panel {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 10;
+    background: rgba(15, 15, 22, 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 11px;
+    color: #8a8578;
+    line-height: 1.7;
+    max-width: 340px;
+  }
+
+  #info-panel .highlight { color: #c8b8ff; font-weight: 600; }
+  #info-panel .warm { color: #ffb87a; font-weight: 600; }
+
+  #stats {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10;
+    text-align: right;
+    font-size: 11px;
+    color: #5a5550;
+  }
+</style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+
+<div id="ui-overlay">
+  <h1>Riemann Vortex</h1>
+  <div class="subtitle">Prime helix spiraling to North Pole (∞)</div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Primes <span class="val" id="count-val">100,000</span></label>
+      <input type="range" id="prime-count" min="1000" max="500000" value="100000" step="1000">
+    </div>
+    <div class="control-group">
+      <label>Chord opacity <span class="val" id="opacity-val">0.05</span></label>
+      <input type="range" id="chord-opacity" min="0.01" max="0.2" value="0.05" step="0.01">
+    </div>
+    <div class="control-group">
+      <label>Display</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-layer="chords">Helix</button>
+        <button class="toggle-btn active" data-layer="points">Primes</button>
+        <button class="toggle-btn active" data-layer="wireframe">Sphere</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="info-panel">
+  <span class="highlight">Logarithmic Spiral Projection</span><br>
+  Radius r = 3.5 / ln(p+1.1) maps primes to sphere.<br>
+  <span class="warm">North Pole</span> = Origin = p → ∞<br>
+  <span class="highlight">South Pole</span> = Boundary = small p<br>
+  Drag to orbit · scroll to zoom
+</div>
+
+<div id="stats"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =========================
+   CONFIG
+========================= */
+const MAX_PRIMES = 500000;   // change to 300000 if you want safer "most laptops" mode
+const INITIAL_COUNT = 100000;
+const TWO_PI = 2 * Math.PI;
+
+/* =========================
+   PRIME GENERATION
+========================= */
+function nthPrimeUpperBound(n) {
+  if (n < 6) return 15;
+  return Math.ceil(n * (Math.log(n) + Math.log(Math.log(n))) + 10);
+}
+
+function sieve(max) {
+  const marked = new Uint8Array(max + 1);
+  const primes = [];
+  for (let i = 2; i <= max; i++) {
+    if (!marked[i]) {
+      primes.push(i);
+      if (i * i <= max) {
+        for (let j = i * i; j <= max; j += i) marked[j] = 1;
+      }
+    }
+  }
+  return primes;
+}
+
+let sieveLimit = nthPrimeUpperBound(MAX_PRIMES);
+let ALL_PRIMES = sieve(sieveLimit);
+while (ALL_PRIMES.length < MAX_PRIMES) {
+  sieveLimit = Math.ceil(sieveLimit * 1.1);
+  ALL_PRIMES = sieve(sieveLimit);
+}
+ALL_PRIMES = ALL_PRIMES.slice(0, MAX_PRIMES);
+
+/* =========================
+   MAPPING
+========================= */
+function stereoToSphere(px, py) {
+  const r2 = px * px + py * py;
+  const denom = 1 + r2;
+  return {
+    x: 2 * px / denom,
+    y: 2 * py / denom,
+    z: (1 - r2) / denom
+  };
+}
+
+function getRadius(p) {
+  return 3.5 / Math.log(p + 1.1);
+}
+
+function circlePointToSphere(theta, r) {
+  const x = r * Math.cos(theta);
+  const y = r * Math.sin(theta);
+  return stereoToSphere(x, y);
+}
+
+/* =========================
+   THREE SETUP
+========================= */
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0f);
+
+const camera = new THREE.PerspectiveCamera(
+  50,
+  window.innerWidth / window.innerHeight,
+  0.01,
+  100
+);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: false,                 // faster for high counts
+  powerPreference: "high-performance"
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+container.appendChild(renderer.domElement);
+
+/* =========================
+   CAMERA ORBIT
+========================= */
+let isDragging = false;
+let prevMouse = { x: 0, y: 0 };
+let spherical = { theta: 0.5, phi: 1.2, radius: 3.5 };
+
+function updateCamera() {
+  const st = Math.sin(spherical.phi);
+  camera.position.set(
+    spherical.radius * st * Math.sin(spherical.theta),
+    spherical.radius * Math.cos(spherical.phi),
+    spherical.radius * st * Math.cos(spherical.theta)
+  );
+  camera.lookAt(0, 0, 0);
+}
+updateCamera();
+
+renderer.domElement.addEventListener('mousedown', e => {
+  isDragging = true;
+  prevMouse = { x: e.clientX, y: e.clientY };
+});
+
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  spherical.theta -= (e.clientX - prevMouse.x) * 0.005;
+  spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi - (e.clientY - prevMouse.y) * 0.005));
+  prevMouse = { x: e.clientX, y: e.clientY };
+  updateCamera();
+});
+
+window.addEventListener('mouseup', () => isDragging = false);
+
+renderer.domElement.addEventListener('wheel', e => {
+  spherical.radius = Math.max(1.1, Math.min(10, spherical.radius + e.deltaY * 0.002));
+  updateCamera();
+}, { passive: true });
+
+/* =========================
+   PRECOMPUTE GEOMETRY DATA
+========================= */
+const pointPositions = new Float32Array(MAX_PRIMES * 3);
+const pointColors    = new Float32Array(MAX_PRIMES * 3);
+
+const linePositions  = new Float32Array((MAX_PRIMES - 1) * 6);
+const lineColors     = new Float32Array((MAX_PRIMES - 1) * 6);
+
+for (let i = 0; i < MAX_PRIMES; i++) {
+  const p = ALL_PRIMES[i];
+  const r = getRadius(p);
+  const s = circlePointToSphere(p % TWO_PI, r);
+
+  const j = i * 3;
+  pointPositions[j]     = s.x;
+  pointPositions[j + 1] = s.y;
+  pointPositions[j + 2] = s.z;
+
+  const gap = i < MAX_PRIMES - 1 ? (ALL_PRIMES[i + 1] - p) : 2;
+  const hue = Math.max(0, 0.7 - gap * 0.03);
+  const c = new THREE.Color().setHSL(hue, 0.6, 0.5);
+
+  pointColors[j]     = c.r;
+  pointColors[j + 1] = c.g;
+  pointColors[j + 2] = c.b;
+
+  if (i < MAX_PRIMES - 1) {
+    const p2 = ALL_PRIMES[i + 1];
+    const s2 = circlePointToSphere(p2 % TWO_PI, getRadius(p2));
+
+    const k = i * 6;
+    linePositions[k]     = s.x;
+    linePositions[k + 1] = s.y;
+    linePositions[k + 2] = s.z;
+    linePositions[k + 3] = s2.x;
+    linePositions[k + 4] = s2.y;
+    linePositions[k + 5] = s2.z;
+
+    lineColors[k]     = c.r;
+    lineColors[k + 1] = c.g;
+    lineColors[k + 2] = c.b;
+    lineColors[k + 3] = c.r;
+    lineColors[k + 4] = c.g;
+    lineColors[k + 5] = c.b;
+  }
+}
+
+/* =========================
+   GEOMETRIES / MATERIALS
+========================= */
+const pointsGeometry = new THREE.BufferGeometry();
+pointsGeometry.setAttribute('position', new THREE.BufferAttribute(pointPositions, 3));
+pointsGeometry.setAttribute('color', new THREE.BufferAttribute(pointColors, 3));
+pointsGeometry.setDrawRange(0, INITIAL_COUNT);
+
+const pointsMaterial = new THREE.PointsMaterial({
+  size: 0.012,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.85,
+  depthWrite: false
+});
+
+const pointsMesh = new THREE.Points(pointsGeometry, pointsMaterial);
+scene.add(pointsMesh);
+
+const lineGeometry = new THREE.BufferGeometry();
+lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+lineGeometry.setAttribute('color', new THREE.BufferAttribute(lineColors, 3));
+lineGeometry.setDrawRange(0, (INITIAL_COUNT - 1) * 2);
+
+const lineMaterial = new THREE.LineBasicMaterial({
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.05,
+  depthWrite: false
+});
+
+const chordsMesh = new THREE.LineSegments(lineGeometry, lineMaterial);
+scene.add(chordsMesh);
+
+// Sphere wireframe
+const wireframeMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(0.99, 32, 32),
+  new THREE.MeshBasicMaterial({
+    color: 0x1a1a2e,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.1
+  })
+);
+scene.add(wireframeMesh);
+
+// North pole marker
+const northPole = new THREE.Mesh(
+  new THREE.SphereGeometry(0.02, 8, 8),
+  new THREE.MeshBasicMaterial({ color: 0xffb87a })
+);
+northPole.position.set(0, 0, 1);
+scene.add(northPole);
+
+/* =========================
+   STATE / UI
+========================= */
+let config = {
+  count: INITIAL_COUNT,
+  chordOpacity: 0.05
+};
+
+let layers = {
+  chords: true,
+  points: true,
+  wireframe: true
+};
+
+function updateVisibleRange() {
+  const count = config.count;
+  pointsGeometry.setDrawRange(0, count);
+  lineGeometry.setDrawRange(0, Math.max(0, (count - 1) * 2));
+
+  // Slight auto point-size adjustment for density
+  if (count < 100000) pointsMaterial.size = 0.016;
+  else if (count < 250000) pointsMaterial.size = 0.012;
+  else pointsMaterial.size = 0.009;
+
+  document.getElementById('stats').innerHTML =
+    `${count.toLocaleString()} primes spiraling to N-Pole`;
+}
+
+updateVisibleRange();
+
+document.getElementById('prime-count').addEventListener('input', function() {
+  config.count = +this.value;
+  document.getElementById('count-val').textContent = config.count.toLocaleString();
+  updateVisibleRange();
+});
+
+document.getElementById('chord-opacity').addEventListener('input', function() {
+  config.chordOpacity = +this.value;
+  document.getElementById('opacity-val').textContent = this.value;
+  lineMaterial.opacity = config.chordOpacity;
+});
+
+document.querySelectorAll('.toggle-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const layer = this.dataset.layer;
+    layers[layer] = this.classList.toggle('active');
+
+    if (layer === 'points') pointsMesh.visible = layers.points;
+    if (layer === 'chords') chordsMesh.visible = layers.chords;
+    if (layer === 'wireframe') wireframeMesh.visible = layers.wireframe;
+  });
+});
+
+/* =========================
+   ANIMATION
+========================= */
+let autoRotate = true;
+renderer.domElement.addEventListener('mousedown', () => autoRotate = false);
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (autoRotate) {
+    spherical.theta += 0.002;
+    updateCamera();
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+/* =========================
+   RESIZE
+========================= */
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
