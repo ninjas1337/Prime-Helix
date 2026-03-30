@@ -66,7 +66,7 @@ The LaTeX source and compiled PDF are included in the repository:
 
 The paper presents the construction, derives the chord length formula, defines the two-particle experiment, and draws tentative connections to the prime number theorem, Euler's product formula, the pole at s = 1, and the oscillatory corrections from zeta zeros. It is exploratory in nature — it does not prove new theorems, but proposes a complementary geometric perspective that may offer fresh intuition.
 
-To compile: upload `prime_helix_paper.tex` and the figure PNGs to [Overleaf](https://overleaf.com), or compile locally with `pdflatex`.
+
 
 ## Key Results
 
