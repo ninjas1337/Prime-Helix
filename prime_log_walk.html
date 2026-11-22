@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prime Walk at the Zeta Zeros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Layout: walk canvas left, controls and spectrum right; stacks to one column on phones */
+  --bg:#f3f4f1;
+  --panel:#ffffff;
+  --ink:#1b2129;
+  --muted:#6b7480;
+  --line:#d9ddd6;
+  --accent:#0f6e8c;
+  --accent-soft:#d5e8ee;
+  --hot:#b8541a;
+  --font-display:"Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11161b; --panel:#181f26; --ink:#e4e8ec; --muted:#8c96a1; --line:#2a333c;
+    --accent:#4fb3d1; --accent-soft:#16323d; --hot:#e88a4f; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11161b; --panel:#181f26; --ink:#e4e8ec; --muted:#8c96a1; --line:#2a333c;
+  --accent:#4fb3d1; --accent-soft:#16323d; --hot:#e88a4f; color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 48px;display:grid;gap:20px}
+header h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,5vw,3rem);line-height:1.05;margin:0 0 8px;text-wrap:balance}
+header h1 em{color:var(--accent)}
+header p{margin:0;max-width:65ch;color:var(--muted)}
+.formula{font-family:var(--font-mono);font-size:.95rem;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:nowrap}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px}
+.panel h2{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600}
+canvas{display:block;width:100%;border-radius:6px;touch-action:none}
+#walk{aspect-ratio:1/1;background:var(--bg)}
+#spec{height:190px;background:var(--bg);cursor:crosshair}
+.theta-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.theta-row label{font-family:var(--font-display);font-size:1.6rem}
+#thetaNum{font-family:var(--font-mono);font-size:1.25rem;width:9.5ch;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button,select{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer}
+button:hover,select:hover{border-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.zero{font-family:var(--font-mono);font-size:.82rem}
+button.zero.on{background:var(--accent);border-color:var(--accent);color:var(--panel)}
+button.off{border-style:dashed}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--panel);font-weight:500}
+.opts{display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:.9rem}
+.opts label{display:flex;gap:6px;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stat{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.stat .k{font-size:.75rem;color:var(--muted)}
+.stat .v{font-family:var(--font-mono);font-size:1.05rem;font-variant-numeric:tabular-nums}
+.state{display:inline-block;font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.state.hit{background:var(--hot);color:var(--panel)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.notes h3{font-family:var(--font-display);font-weight:400;font-size:1.45rem;margin:0 0 6px}
+.notes p,.notes li{max-width:65ch;margin:0 0 8px}
+.notes ul{padding-left:18px;margin:0}
+.src{font-size:.88rem;color:var(--muted)}
+.src li{margin-bottom:4px}
+.cap{font-size:.82rem;color:var(--muted);margin:0}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p style="margin:0 0 8px"><a href="index.html" style="color:var(--accent)">← The Prime Helix</a></p>
+    <h1>Prime walk at the <em>zeta zeros</em></h1>
+    <p>Turn every prime power n by the angle t·ln n, give it the length Λ(n)/√n, and chain the arrows head to tail. At most t the walk tangles up near where it started. Slide t onto 14.1347 and it straightens into a line.</p>
+  </header>
+
+  <div class="formula">W<sub>t</sub>(N) = Σ<sub>n ≤ N</sub> Λ(n)·n<sup>−1/2</sup>·e<sup>−it ln n</sup> − (N<sup>1/2 − it</sup> − 1)/(1/2 − it)</div>
+
+  <div class="grid">
+    <section class="panel" aria-label="The walk">
+      <h2>The walk in the complex plane</h2>
+      <canvas id="walk" role="img" aria-label="Path of the prime walk for the current theta"></canvas>
+      <p class="cap" id="walkCap">Colour runs from the first primes (pale) to n = N (strong). Ring: start. Dot: end.</p>
+    </section>
+
+    <div style="display:grid;gap:20px">
+      <section class="panel" aria-label="Controls">
+        <h2>Winding rate</h2>
+        <div class="theta-row">
+          <label for="thetaNum">t =</label>
+          <input id="thetaNum" type="number" step="0.001" min="5" max="50" value="15">
+          <span class="state" id="stateChip">between zeros</span>
+        </div>
+        <input id="theta" type="range" min="5" max="50" step="0.0005" value="15" aria-label="Theta slider">
+        <div class="btns">
+          <button id="m1" type="button">−0.1</button>
+          <button id="m2" type="button">−0.01</button>
+          <button id="p2" type="button">+0.01</button>
+          <button id="p1" type="button">+0.1</button>
+          <button id="play" type="button" class="primary">Sweep t</button>
+        </div>
+        <div class="btns" id="zeroBtns" aria-label="Jump to a zero"></div>
+        <div class="opts">
+          <label for="nSel">Primes up to N =
+            <select id="nSel">
+              <option value="10000">10⁴</option>
+              <option value="100000" selected>10⁵</option>
+              <option value="1000000">10⁶</option>
+            </select>
+          </label>
+          <label for="pole"><input id="pole" type="checkbox" checked> Remove the pole spiral</label>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="k">Nearest zero γ</div><div class="v" id="sGamma">–</div></div>
+          <div class="stat"><div class="k">t − γ</div><div class="v" id="sDelta">–</div></div>
+          <div class="stat"><div class="k">Predicted arc radius 1/|t − γ|</div><div class="v" id="sRad">–</div></div>
+          <div class="stat"><div class="k">Share of a full circle traced</div><div class="v" id="sTurn">–</div></div>
+          <div class="stat"><div class="k">End point W(N)</div><div class="v" id="sEnd">–</div></div>
+          <div class="stat"><div class="k">−ln N (straight-line length at a zero)</div><div class="v" id="sLn">–</div></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Resonance spectrum">
+        <h2>Resonance spectrum, N = 10⁵</h2>
+        <canvas id="spec" tabindex="0" aria-label="Spectrum of the walk length against theta. Tap to set theta."></canvas>
+        <p class="cap">Length of the smoothed walk for every t from 5 to 50. Dashed lines mark the known zeros. Tap or drag to set t.</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="notes">
+    <div>
+      <h3>What you are seeing</h3>
+      <ul>
+        <li><b>Between zeros</b> the arrows keep changing direction and the walk stays in a small tangle.</li>
+        <li><b>Near a zero γ</b> the walk follows an arc of a circle through the start point, with radius 1/|t − γ|. The closer you get, the bigger and flatter the arc.</li>
+        <li><b>At a zero</b> the circle opens into a straight line pointing left, growing like ln N. This is the prime walk resonating with the zero.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Why this happens</h3>
+      <p>The sum is the Dirichlet series for −ζ′/ζ(s) on the line s = 1/2 + it. By the explicit formula, each zero ρ = 1/2 + iγ adds a term −N<sup>ρ−s</sup>/(ρ − s), which traces a circle of radius 1/|γ − t| as N grows and becomes −ln N when t = γ.</p>
+      <p>The subtracted term removes the pole of ζ at s = 1. Untick the box to see it: a spiral of radius about √N/t that hides everything else.</p>
+    </div>
+    <div class="src">
+      <h3 style="color:var(--ink)">Sources</h3>
+      <ul>
+        <li>H. Davenport, <i>Multiplicative Number Theory</i>, 3rd ed., Springer GTM 74, 2000, ch. 17.</li>
+        <li>H. Iwaniec &amp; E. Kowalski, <i>Analytic Number Theory</i>, AMS Colloq. Publ. 53, 2004, ch. 5.</li>
+        <li>E. Landau, “Über die Nullstellen der Zetafunktion”, <i>Math. Ann.</i> 71 (1911), 548–564.</li>
+        <li>A. M. Odlyzko, tables of zeros of the Riemann zeta function (values of γ used here).</li>
+        <li>Section 9 of <a href="Prime Helix Paper.pdf" style="color:inherit">The Prime Helix</a> (version 2), Sanjin Redzic.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+"use strict";
+const ZEROS=[14.134725,21.022040,25.010858,30.424876,32.935062,37.586178,40.918719,43.327073,48.005151,49.773832];
+const NMAX=1000000;
+
+// Prime powers up to NMAX with Λ(n), sorted by n
+const sv=new Uint8Array(NMAX+1); const pp=[];
+for(let i=2;i<=NMAX;i++){
+  if(!sv[i]){
+    if(i*i<=NMAX) for(let j=i*i;j<=NMAX;j+=i) sv[j]=1;
+    const lp=Math.log(i); let q=i;
+    while(q<=NMAX){pp.push([q,lp]); q*=i;}
+  }
+}
+pp.sort((a,b)=>a[0]-b[0]);
+const M=pp.length;
+const nArr=new Float64Array(M), lnArr=new Float64Array(M), wArr=new Float64Array(M), sqArr=new Float64Array(M);
+for(let k=0;k<M;k++){const n=pp[k][0]; nArr[k]=n; lnArr[k]=Math.log(n); sqArr[k]=Math.sqrt(n); wArr[k]=pp[k][1]/sqArr[k];}
+function countUpTo(N){let lo=0,hi=M;while(lo<hi){const m=(lo+hi)>>1; if(nArr[m]<=N) lo=m+1; else hi=m;} return lo;}
+
+const el=id=>document.getElementById(id);
+const walkC=el("walk"), specC=el("spec");
+const slider=el("theta"), num=el("thetaNum"), nSel=el("nSel"), poleBox=el("pole");
+let theta=15, N=100000, removePole=true;
+let pts=new Float64Array(2*(M+1));
+
+function css(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim();}
+function hexToRgb(h){h=h.replace("#",""); if(h.length===3) h=h.split("").map(c=>c+c).join(""); const v=parseInt(h,16); return [(v>>16)&255,(v>>8)&255,v&255];}
+function mix(a,b,t){return "rgb("+a.map((x,i)=>Math.round(x+(b[i]-x)*t)).join(",")+")";}
+
+function fitCanvas(c){
+  const r=c.getBoundingClientRect(), d=window.devicePixelRatio||1;
+  const w=Math.max(1,Math.round(r.width*d)), h=Math.max(1,Math.round(r.height*d));
+  if(c.width!==w||c.height!==h){c.width=w;c.height=h;}
+  return {w,h,d};
+}
+
+function computeWalk(){
+  const cnt=countUpTo(N);
+  const dd=0.25+theta*theta;
+  let re=0,im=0; pts[0]=0; pts[1]=0;
+  for(let k=0;k<cnt;k++){
+    const ang=-theta*lnArr[k], c=Math.cos(ang), s=Math.sin(ang);
+    re+=wArr[k]*c; im+=wArr[k]*s;
+    let x=re,y=im;
+    if(removePole){
+      const cr=sqArr[k]*c-1, ci=sqArr[k]*s;
+      x-= (cr*0.5-ci*theta)/dd;
+      y-= (cr*theta+ci*0.5)/dd;
+    }
+    pts[2*k+2]=x; pts[2*k+3]=y;
+  }
+  return cnt+1;
+}
+
+function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x))); const m=x/p; return (m<1.5?1:m<3.5?2:m<7.5?5:10)*p;}
+
+function drawWalk(){
+  const P=computeWalk();
+  const {w,h,d}=fitCanvas(walkC); const g=walkC.getContext("2d");
+  g.clearRect(0,0,w,h);
+  let minX=0,maxX=0,minY=0,maxY=0;
+  for(let i=0;i<P;i++){const x=pts[2*i],y=pts[2*i+1]; if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y;}
+  const pad=22*d, span=Math.max(maxX-minX,maxY-minY,1e-9);
+  const sc=(Math.min(w,h)-2*pad)/span;
+  const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
+  const X=x=>w/2+(x-cx)*sc, Y=y=>h/2-(y-cy)*sc;
+  const lineC=css("--line"), mutedRgb=hexToRgb(css("--muted")), accRgb=hexToRgb(css("--accent")), ink=css("--ink");
+  // axes through origin
+  g.strokeStyle=lineC; g.lineWidth=1*d;
+  g.beginPath(); g.moveTo(0,Y(0)); g.lineTo(w,Y(0)); g.moveTo(X(0),0); g.lineTo(X(0),h); g.stroke();
+  // path in colour bands
+  const B=48, stride=P>45000?2:1;
+  for(let b=0;b<B;b++){
+    const i0=Math.floor(b*(P-1)/B), i1=Math.floor((b+1)*(P-1)/B);
+    g.strokeStyle=mix(mutedRgb,accRgb,(b+1)/B);
+    g.lineWidth=(1+1.2*(b/B))*d; g.lineJoin="round";
+    g.beginPath(); g.moveTo(X(pts[2*i0]),Y(pts[2*i0+1]));
+    for(let i=i0+stride;i<=i1;i+=stride) g.lineTo(X(pts[2*i]),Y(pts[2*i+1]));
+    g.lineTo(X(pts[2*i1]),Y(pts[2*i1+1])); g.stroke();
+  }
+  // start ring, end dot
+  g.strokeStyle=ink; g.lineWidth=1.5*d; g.beginPath(); g.arc(X(0),Y(0),5*d,0,2*Math.PI); g.stroke();
+  const ex=pts[2*(P-1)], ey=pts[2*(P-1)+1];
+  g.fillStyle=css("--hot"); g.beginPath(); g.arc(X(ex),Y(ey),5*d,0,2*Math.PI); g.fill();
+  // scale bar
+  const unit=niceStep(span/5), L=unit*sc;
+  g.strokeStyle=ink; g.lineWidth=2*d;
+  g.beginPath(); g.moveTo(w-pad-L,h-pad/1.6); g.lineTo(w-pad,h-pad/1.6); g.stroke();
+  g.fillStyle=ink; g.font=(11*d)+"px "+css("--font-mono"); g.textAlign="right"; g.textBaseline="bottom";
+  g.fillText(String(+unit.toPrecision(3)),w-pad,h-pad/1.6-4*d);
+  updateStats(ex,ey);
+}
+
+function updateStats(ex,ey){
+  let best=ZEROS[0]; for(const z of ZEROS) if(Math.abs(z-theta)<Math.abs(best-theta)) best=z;
+  const dl=theta-best, lnN=Math.log(N);
+  el("sGamma").textContent=best.toFixed(6);
+  el("sDelta").textContent=(dl>=0?"+":"−")+Math.abs(dl).toFixed(4);
+  el("sRad").textContent=Math.abs(dl)<5e-4?"∞ (straight line)":(1/Math.abs(dl)).toFixed(2);
+  const turn=Math.abs(dl)*lnN/(2*Math.PI);
+  el("sTurn").textContent=turn<1?(100*turn).toFixed(1)+" %":turn.toFixed(1)+" circles";
+  el("sEnd").textContent=ex.toFixed(2)+(ey>=0?" + ":" − ")+Math.abs(ey).toFixed(2)+"i";
+  el("sLn").textContent=(-lnN).toFixed(2);
+  const chip=el("stateChip");
+  if(Math.abs(dl)<0.02){chip.textContent="on a zero"; chip.classList.add("hit");}
+  else if(turn<1){chip.textContent="near a zero"; chip.classList.remove("hit");}
+  else {chip.textContent="between zeros"; chip.classList.remove("hit");}
+  document.querySelectorAll("button.zero").forEach(b=>b.classList.toggle("on",Math.abs(+b.dataset.g-theta)<0.02));
+  el("walkCap").textContent=removePole
+    ? "Colour runs from the first primes (pale) to n = N (strong). Ring: start. Dot: end. Bar: scale."
+    : "Pole spiral included: the big spiral of radius about √N/t dominates. Tick the box to remove it.";
+}
+
+// Spectrum: smoothed walk length with taper (1 − n/X)^2 and its pole term removed
+const SX=100000, TH0=5, TH1=50, DTH=0.02, NS=Math.round((TH1-TH0)/DTH)+1;
+const spec=new Float64Array(NS); let specDone=0;
+const scnt=countUpTo(SX), staper=new Float64Array(scnt);
+for(let k=0;k<scnt;k++){const u=1-nArr[k]/SX; staper[k]=wArr[k]*u*u;}
+function cdiv(ar,ai,br,bi){const q=br*br+bi*bi; return [(ar*br+ai*bi)/q,(ai*br-ar*bi)/q];}
+function poleTerm(t){
+  // Σ_k c_k (X^{k+1-s} − 1)/(k+1-s), s = 1/2 + i t
+  const lnX=Math.log(SX), cs=[1,-2/SX,1/(SX*SX)]; let r=0,i=0;
+  for(let k=0;k<3;k++){
+    const ar=k+0.5, mag=Math.exp(ar*lnX), ph=-t*lnX;
+    const nr=mag*Math.cos(ph)-1, ni=mag*Math.sin(ph);
+    const [qr,qi]=cdiv(nr,ni,ar,-t); r+=cs[k]*qr; i+=cs[k]*qi;
+  }
+  return [r,i];
+}
+function specChunk(){
+  const end=Math.min(NS,specDone+40);
+  for(let j=specDone;j<end;j++){
+    const t=TH0+j*DTH; let r=0,i=0;
+    for(let k=0;k<scnt;k++){const a=-t*lnArr[k]; r+=staper[k]*Math.cos(a); i+=staper[k]*Math.sin(a);}
+    const [pr,pi]=poleTerm(t); spec[j]=Math.hypot(r-pr,i-pi);
+  }
+  specDone=end; drawSpec();
+  if(specDone<NS) setTimeout(specChunk,0);
+}
+
+function drawSpec(){
+  const {w,h,d}=fitCanvas(specC); const g=specC.getContext("2d");
+  g.clearRect(0,0,w,h);
+  const padL=34*d, padR=10*d, padT=12*d, padB=24*d;
+  const X=t=>padL+(t-TH0)/(TH1-TH0)*(w-padL-padR);
+  let ymax=1e-9; for(let j=0;j<specDone;j++) if(spec[j]>ymax) ymax=spec[j];
+  ymax=niceStep(ymax*1.05)*Math.ceil(ymax*1.05/niceStep(ymax*1.05));
+  const Y=v=>h-padB-(v/ymax)*(h-padT-padB);
+  const lineC=css("--line"), muted=css("--muted"), acc=css("--accent"), hot=css("--hot");
+  g.font=(10*d)+"px "+css("--font-mono"); g.fillStyle=muted;
+  // grid
+  g.strokeStyle=lineC; g.lineWidth=1*d; g.textAlign="right"; g.textBaseline="middle";
+  for(let v=0;v<=ymax+1e-9;v+=ymax/2){g.beginPath(); g.moveTo(padL,Y(v)); g.lineTo(w-padR,Y(v)); g.stroke(); g.fillText(String(+v.toPrecision(3)),padL-5*d,Y(v));}
+  g.textAlign="center"; g.textBaseline="top";
+  for(let t=10;t<=50;t+=10) g.fillText(String(t),X(t),h-padB+5*d);
+  // zero markers
+  g.setLineDash([3*d,4*d]); g.strokeStyle=muted;
+  for(const z of ZEROS){g.beginPath(); g.moveTo(X(z),padT); g.lineTo(X(z),h-padB); g.stroke();}
+  g.setLineDash([]);
+  // curve with area fill
+  if(specDone>1){
+    g.beginPath(); g.moveTo(X(TH0),Y(0));
+    for(let j=0;j<specDone;j++) g.lineTo(X(TH0+j*DTH),Y(spec[j]));
+    g.lineTo(X(TH0+(specDone-1)*DTH),Y(0)); g.closePath();
+    g.fillStyle=css("--accent-soft"); g.fill();
+    g.beginPath();
+    for(let j=0;j<specDone;j++){const x=X(TH0+j*DTH), y=Y(spec[j]); j?g.lineTo(x,y):g.moveTo(x,y);}
+    g.strokeStyle=acc; g.lineWidth=1.5*d; g.stroke();
+  }
+  if(specDone<NS){g.fillStyle=muted; g.textAlign="right"; g.textBaseline="top"; g.fillText("computing "+Math.round(100*specDone/NS)+" %",w-padR,padT);}
+  // current theta
+  g.strokeStyle=hot; g.lineWidth=2*d; g.beginPath(); g.moveTo(X(theta),padT); g.lineTo(X(theta),h-padB); g.stroke();
+}
+
+let raf=0;
+function setTheta(t,from){
+  theta=Math.min(TH1,Math.max(TH0,+t));
+  if(from!=="slider") slider.value=theta;
+  if(from!=="num") num.value=theta.toFixed(4);
+  if(!raf) raf=requestAnimationFrame(()=>{raf=0; drawWalk(); drawSpec();});
+}
+
+// zero buttons
+const zb=el("zeroBtns");
+ZEROS.slice(0,6).forEach((z,i)=>{const b=document.createElement("button"); b.type="button"; b.className="zero"; b.dataset.g=z; b.textContent="γ"+(i+1)+" = "+z.toFixed(3); b.addEventListener("click",()=>{stopPlay(); setTheta(z);}); zb.appendChild(b);});
+const ob=document.createElement("button"); ob.type="button"; ob.className="off"; ob.textContent="Off a zero: t = 15"; ob.addEventListener("click",()=>{stopPlay(); setTheta(15);}); zb.appendChild(ob);
+
+slider.addEventListener("input",()=>{stopPlay(); setTheta(slider.value,"slider");});
+num.addEventListener("change",()=>{stopPlay(); if(!isNaN(+num.value)) setTheta(num.value,"num");});
+[["m1",-0.1],["m2",-0.01],["p2",0.01],["p1",0.1]].forEach(([id,dv])=>el(id).addEventListener("click",()=>{stopPlay(); setTheta(theta+dv);}));
+nSel.addEventListener("change",()=>{N=+nSel.value; setTheta(theta);});
+poleBox.addEventListener("change",()=>{removePole=poleBox.checked; setTheta(theta);});
+
+// spectrum interaction
+function specPick(e){const r=specC.getBoundingClientRect(); const d=window.devicePixelRatio||1; const x=(e.clientX-r.left)*d; const padL=34*d, padR=10*d; const t=TH0+(x-padL)/(specC.width-padL-padR)*(TH1-TH0); stopPlay(); setTheta(t);}
+let dragging=false;
+specC.addEventListener("pointerdown",e=>{dragging=true; specC.setPointerCapture(e.pointerId); specPick(e);});
+specC.addEventListener("pointermove",e=>{if(dragging) specPick(e);});
+specC.addEventListener("pointerup",()=>{dragging=false;});
+specC.addEventListener("keydown",e=>{if(e.key==="ArrowRight"){setTheta(theta+0.01);e.preventDefault();} if(e.key==="ArrowLeft"){setTheta(theta-0.01);e.preventDefault();}});
+
+// sweep
+let playing=false, last=0;
+const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function tick(ts){
+  if(!playing) return;
+  const dt=last?Math.min(0.05,(ts-last)/1000):0; last=ts;
+  let near=Infinity; for(const z of ZEROS) near=Math.min(near,Math.abs(z-theta));
+  const speed=near<0.6?0.12:0.9; // slow down near zeros so the arc can be seen opening
+  let t=theta+speed*dt; if(t>TH1) t=TH0;
+  setTheta(t);
+  requestAnimationFrame(tick);
+}
+function stopPlay(){playing=false; last=0; el("play").textContent="Sweep t";}
+el("play").addEventListener("click",()=>{
+  if(playing){stopPlay(); return;}
+  if(reduce){setTheta(theta+0.1); return;}
+  playing=true; last=0; el("play").textContent="Pause"; requestAnimationFrame(tick);
+});
+
+window.addEventListener("resize",()=>setTheta(theta));
+if(window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>setTheta(theta));
+new MutationObserver(()=>setTheta(theta)).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+setTheta(15);
+setTimeout(specChunk,30);
+})();
+</script>
+</body>
+</html>

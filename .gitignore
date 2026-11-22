@@ -1,0 +1,8 @@
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+prime_helix_paper.pdf
+__pycache__/
