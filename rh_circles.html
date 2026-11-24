@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Riemann Hypothesis, Drawn with Circles</title>
+<meta name="description" content="The most famous problem in mathematics, explained with circles of prime radius. Interactive, no formulas needed.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Riemann Hypothesis, Drawn with Circles">
+<meta property="og:description" content="One circle for every prime. Their centres wobble, the wobble hides the zeta zeros, and the Riemann Hypothesis says how big the wobble can get.">
+<meta property="og:url" content="https://ninjas1337.github.io/Riemann-Hypothesis-Drawn-with-Circles/">
+<meta property="og:image" content="https://ninjas1337.github.io/Riemann-Hypothesis-Drawn-with-Circles/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="627">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="author" content="Sanjin Redzic">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -95,6 +105,7 @@ a{color:var(--accent)}
     </div>
     <p class="readout" id="r1"></p>
   </div>
+  <p>Notice what sets each position: a centre sits where all the circles before it have pushed it. So its distance along the line is a running total of every earlier prime, not the width of one circle. That running total is what we will follow.</p>
   <p>Mark the centre of every circle. The primes jump around unpredictably, yet the centres line up surprisingly well along a smooth curve (dashed). That curve comes from the <b>prime number theorem</b> from 1896, which tells us how many primes there are on average. The dots never sit exactly on it, though. That tiny mismatch is what the whole story is about.</p>
 </section>
 
@@ -127,7 +138,7 @@ a{color:var(--accent)}
     </div>
     <p class="cap"><span class="key" style="background:var(--prime)"></span>Centre ahead of the curve <span class="key" style="background:var(--accent);margin-left:12px"></span>Centre behind the curve</p>
   </div>
-  <p>The wobble grows as the circles grow. Scale it by the size the theory expects, and something remarkable appears: for every prime up to 100 million, the wobble stays in the same band, swinging up and down in an irregular but strangely rhythmic way.</p>
+  <p>The wobble grows as the circles grow. Scale it by the size the theory expects, and something remarkable appears: for every prime up to 100 million, the wobble stays in the same band, swinging up and down in an irregular but strangely rhythmic way. No finite range can prove anything about infinity, of course. The computation shows what the theory predicts, not that it holds forever.</p>
   <div class="panel">
     <canvas id="cv3b" class="c-wide" role="img" aria-label="The scaled wobble for primes from one thousand to one hundred million"></canvas>
     <p class="cap">Scaled wobble for every prime from 1,000 to 100,000,000 (horizontal axis on a log scale).</p>
@@ -170,12 +181,12 @@ a{color:var(--accent)}
     <div class="controls">
       <label for="b5">Position of the first zero: <input id="b5" type="range" min="0.5" max="0.6" step="0.001" value="0.5"> <span class="readout" id="b5v"></span></label>
     </div>
-    <p class="cap">Wobble built from the first 138 zeros, out to primes of size 10⁴⁰. Real part ½ means on the critical line.</p>
+    <p class="cap">A model, not data: the wobble built from the first 138 zeros, out to primes of size 10⁴⁰, to show how it grows. Real part ½ means on the critical line.</p>
   </div>
   <div class="callout">
-    <p><b>The Riemann Hypothesis, in circle language:</b> the wobble of the prime circles never grows beyond the size you see here, no matter how far you go. The primes are as regular as they can possibly be.</p>
+    <p><b>The Riemann Hypothesis, in circle language:</b> however far you go, the wobble of the prime circles never grows faster than y<sup>1.5</sup>, the size of the band you see here. It may creep outward extremely slowly, by logarithmic factors, but never by a power of y. The primes are as regular as they can possibly be.</p>
   </div>
-  <div class="formula">all zeros on Re(s) = ½  ⟺  wobble stays within about y<sup>1.5</sup> for every prime radius y</div>
+  <div class="formula">all zeros on Re(s) = ½  ⟺  wobble grows no faster than y<sup>1.5+ε</sup>, for every ε &gt; 0</div>
   <p class="cap">This equivalence is a classical theorem by Helge von Koch (1901), written here in terms of the circles.</p>
 </section>
 
@@ -197,6 +208,7 @@ a{color:var(--accent)}
     <li>B. Riemann, Ueber die Anzahl der Primzahlen unter einer gegebenen Grösse, <i>Monatsber. Berliner Akad.</i>, 1859.</li>
     <li>H. von Koch, Sur la distribution des nombres premiers, <i>Acta Math.</i> 24 (1901), 159–182.</li>
     <li>H. Davenport, <i>Multiplicative Number Theory</i>, 3rd ed., Springer, 2000, ch. 17–18.</li>
+    <li>J. E. Littlewood, Sur la distribution des nombres premiers, <i>C. R. Acad. Sci. Paris</i> 158 (1914), 1869–1872.</li>
     <li>A. M. Odlyzko, Tables of zeros of the Riemann zeta function.</li>
     <li>H. Cramér, On the order of magnitude of the difference between consecutive prime numbers, <i>Acta Arith.</i> 2 (1936), 23–46.</li>
     <li>Science News, “Math’s holy grail, the Riemann hypothesis, appears solved with AI’s help”, November 2026.</li>
@@ -247,6 +259,7 @@ function draw1(){
   const k=n-1;
   $("r1").innerHTML=`Last circle: radius <b>${P[k]}</b>, centre at <b>${X[k].toFixed(1)}</b> along and <b>${P[k]}</b> up. The smooth curve predicts <b>${smooth(P[k]).toFixed(1)}</b> along. For small circles the curve is still rough; it fits better and better as the circles grow.`;
 }
+if(window.innerWidth<520) $("n1").value=8;
 $("n1").addEventListener("input",draw1);
 $("curve1").addEventListener("click",function(){showCurve=!showCurve;this.classList.toggle("on",showCurve);draw1();});
 
