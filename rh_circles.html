@@ -96,7 +96,7 @@ a{color:var(--accent)}
 <section aria-labelledby="s1">
   <div class="step">STEP 1 · THE CIRCLES</div>
   <h2 id="s1">One circle for every prime</h2>
-  <p>Prime numbers are the numbers you can only divide by 1 and themselves: 2, 3, 5, 7, 11, 13, … Start at 3. Draw a circle of radius 3 standing on a line. Next to it, a circle of radius 5, placed so the two just touch. Then 7, then 11, and so on: one circle for every prime, each touching the one before.</p>
+  <p>Prime numbers are the whole numbers greater than 1 that can only be divided evenly by 1 and by themselves: 2, 3, 5, 7, 11, 13, … Start at 3. Draw a circle of radius 3 standing on a line. Next to it, a circle of radius 5, placed so the two just touch. Then 7, then 11, and so on: one circle for every prime, each touching the one before.</p>
   <div class="panel">
     <canvas id="cv1" class="c-circ" role="img" aria-label="Circles of prime radius standing on a line, each touching the next"></canvas>
     <div class="controls">
@@ -105,8 +105,8 @@ a{color:var(--accent)}
     </div>
     <p class="readout" id="r1"></p>
   </div>
-  <p>Notice what sets each position: a centre sits where all the circles before it have pushed it. So its distance along the line is a running total of every earlier prime, not the width of one circle. That running total is what we will follow.</p>
-  <p>Mark the centre of every circle. The primes jump around unpredictably, yet the centres line up surprisingly well along a smooth curve (dashed). That curve comes from the <b>prime number theorem</b> from 1896, which tells us how many primes there are on average. The dots never sit exactly on it, though. That tiny mismatch is what the whole story is about.</p>
+  <p>Notice what sets each position: every circle is pushed along by all the circles before it. The exact step between neighbouring circles of radius p and q is 2√(pq), which is very close to p + q because neighbouring primes are close compared with their size. So a centre's distance along the line behaves like twice the running total of all the primes so far, not like the width of one circle. That running total is what we will follow.</p>
+  <p>Mark the centre of every circle. The primes jump around unpredictably, yet the centres line up surprisingly well along a smooth curve (dashed). That curve, x = 2·li(y²) − y − 3, comes from the <b>prime number theorem</b> from 1896 applied to the running total of the primes (li is the logarithmic integral, a standard smooth function). The dots never sit exactly on it, though. That tiny mismatch is what the whole story is about.</p>
 </section>
 
 <!-- STEP 2 -->
@@ -123,14 +123,15 @@ a{color:var(--accent)}
       <span class="readout" id="r2"></span>
     </div>
   </div>
-  <p>So every circle centre is one complex number: the real part says how far along, the imaginary part is the prime itself, the height. Seen from the origin, each centre also has an angle. That angle will turn out to carry the whole secret.</p>
+  <p class="cap">Want to see it in 3D? <a href="https://ninjas1337.github.io/Imaginary-numbers-are-real/">Complex numbers are not imaginary</a> shows one sphere from the front and from above: from above, the imaginary part points straight at your eye and disappears.</p>
+  <p>So every circle centre is one complex number: the real part says how far along, the imaginary part is the prime itself, the height. Seen from the origin, each centre also has an angle, and the tiny change in that angle carries exactly the same wobble we are about to study. These complex numbers are not yet the zeta function's own: we will meet complex numbers again in step 5, where they set the rhythm of the primes.</p>
 </section>
 
 <!-- STEP 3 -->
 <section aria-labelledby="s3">
   <div class="step">STEP 3 · THE WOBBLE</div>
   <h2 id="s3">The centres wobble around the curve</h2>
-  <p>Measure how far each centre lies from the smooth curve. After a cluster of primes that are close together, the chain gets ahead of the curve. After a big gap between primes, it falls behind. Most of the time it sits a little behind; that slight lean is itself a known effect of the primes. The first time the chain catches up and crosses the curve is at the circles 109 and 113, right before the big gap to 127.</p>
+  <p>Measure how far each centre lies from the smooth curve. After a cluster of primes that are close together, the chain gets ahead of the curve. After a big gap between primes, it falls behind. Most of the time it sits a little behind this curve; that slight lean is a known effect, caused by squares of primes. In this model, the first time the chain catches up and crosses the dashed curve is at the circles 109 and 113, right before the big gap to 127.</p>
   <div class="panel">
     <canvas id="cv3" class="c-wide" role="img" aria-label="Distance of each circle centre from the smooth curve, for the first primes"></canvas>
     <div class="controls">
@@ -149,7 +150,7 @@ a{color:var(--accent)}
 <section aria-labelledby="s4">
   <div class="step">STEP 4 · THE WOBBLE IS MUSIC</div>
   <h2 id="s4">Hidden notes inside the wobble</h2>
-  <p>A chord on a piano is several notes at once. You can split any wobbly signal into its notes too, a bit like an ear does. Do that with the wobble of the circles, and clear notes ring out at <b>14.13, 21.02, 25.01, 30.42, 32.94, …</b></p>
+  <p>A chord on a piano is several notes at once. You can split any wobbly signal into its notes too, a bit like an ear does. Do that with the wobble of the circles, measured against the <i>logarithm</i> of the prime size (each step along that axis means multiplying by the same factor), and clear notes ring out at <b>14.13, 21.02, 25.01, 30.42, 32.94, …</b></p>
   <div class="panel">
     <canvas id="cv4" class="c-wide" role="img" aria-label="Frequency spectrum of the wobble, with peaks at the zeros of the zeta function"></canvas>
     <div class="controls">
@@ -157,7 +158,7 @@ a{color:var(--accent)}
       <button id="sp-rand" type="button">Random numbers instead</button>
       <span class="readout" id="r4"></span>
     </div>
-    <p class="cap">Dashed lines: the zeros of the Riemann zeta function. Same circles, same method; the random numbers have the same density as the primes.</p>
+    <p class="cap">Dashed lines: the zeros of the Riemann zeta function. Method: the scaled wobble for primes up to 10⁷, resampled on an even grid in ln y, Hann window, direct Fourier transform. The random numbers (Cramér's model) have the same density as the primes and go through exactly the same steps.</p>
   </div>
   <p>Those numbers are famous. They are the <b>zeros of the Riemann zeta function</b>, found by Bernhard Riemann in 1859. Swap the primes for random numbers of the same density and the notes vanish. The music belongs to the primes.</p>
   <p>Each note behaves like a wheel turning at its own speed. Put wheels on wheels, one per note, and follow the tip: it reproduces the wobble. The more wheels, the closer the match.</p>
@@ -175,7 +176,7 @@ a{color:var(--accent)}
   <div class="step">STEP 5 · WHAT THE HYPOTHESIS SAYS</div>
   <h2 id="s5">All wheels stay the same size</h2>
   <p>Riemann noticed that his zeros all seemed to lie on one straight line in the plane of complex numbers, the <i>critical line</i>. His hypothesis is that <b>every</b> zero lies there, infinitely many of them.</p>
-  <p>In the circle picture this has a simple meaning. A zero on the line is a wheel that keeps its size. A zero off the line would be a wheel that keeps growing. Try it: move the first zero off the line and watch what happens to the wobble far out.</p>
+  <p>In the circle picture this has a simple meaning. After scaling the wobble by y<sup>1.5</sup>, a zero on the line is a wheel that keeps its size, apart from slow logarithmic factors. A zero off the line would be a wheel whose size changes like a power of y, and because zeros come in mirror pairs on either side of the line, one of the pair would always be a wheel that keeps growing. Try it: move the first zero off the line and watch what happens to the wobble far out.</p>
   <div class="panel">
     <canvas id="cv5" class="c-wide" role="img" aria-label="Model wobble out to ten to the forty, with the first zero optionally moved off the critical line"></canvas>
     <div class="controls">
@@ -187,28 +188,46 @@ a{color:var(--accent)}
     <p><b>The Riemann Hypothesis, in circle language:</b> however far you go, the wobble of the prime circles never grows faster than y<sup>1.5</sup>, the size of the band you see here. It may creep outward extremely slowly, by logarithmic factors, but never by a power of y. The primes are as regular as they can possibly be.</p>
   </div>
   <div class="formula">all zeros on Re(s) = ½  ⟺  wobble grows no faster than y<sup>1.5+ε</sup>, for every ε &gt; 0</div>
-  <p class="cap">This equivalence is a classical theorem by Helge von Koch (1901), written here in terms of the circles.</p>
+  <p class="cap">This follows from a classical theorem by Helge von Koch (1901) about counting primes, carried over to the circles; the short derivation is in the notes at the end.</p>
 </section>
 
 <!-- STEP 6 -->
 <section aria-labelledby="s6">
   <div class="step">STEP 6 · WHERE IT STANDS</div>
   <h2 id="s6">Checked by computers, proved this year?</h2>
-  <p>For more than 160 years nobody could prove it, although computers checked trillions of zeros and found every one of them on the line. In November 2026, mathematician Levent Alpöge announced a proof developed together with an AI model, written in the proof language Lean. The Lean and Mathlib communities certified it the next day. The written-out version runs past 250,000 pages, and mathematicians are now working to understand it. Some groups still dispute whether a proof nobody can read counts.</p>
+  <p>For more than 160 years nobody could prove it, although computers rigorously checked every zero up to height 3 trillion, more than 12 trillion zeros, and found every one of them on the line. In November 2026, mathematician Levent Alpöge announced a proof developed together with an AI model, written in the proof language Lean. The Lean and Mathlib communities certified it the next day. The written-out version runs past 250,000 pages, and mathematicians are now working to understand it. Some groups still dispute whether a proof nobody can read counts.</p>
   <p>If it stands, the picture above is now a fact about all primes, forever: the circles never stray further from their curve than the wheels allow.</p>
-  <p>It would also settle far more than one question. For over a century, mathematicians have proved hundreds of results that begin with the words <i>“assuming the Riemann Hypothesis is true”</i>: about how primes are spread out, how fast we can test whether a number is prime, and much more. Alpöge's proof also claims the generalized version of the hypothesis. If it holds, all of those results stop being conditional and become theorems at once. Mankind would have the proof, and everything built on it, before anyone fully understands why it works.</p>
+  <p>It would also settle far more than one question. For over a century, mathematicians have proved hundreds of results that begin with the words <i>“assuming the Riemann Hypothesis is true”</i>: about how primes are spread out, how large the gaps between them can be, and the speed of several number-theory algorithms. Alpöge's proof also claims the generalized version of the hypothesis. If it holds, every result that depends only on these hypotheses stops being conditional and becomes a theorem at once. Mankind would have the proof, and everything built on it, before anyone fully understands why it works.</p>
   <h2 id="s7" style="margin-top:12px">Why I made this</h2>
   <p>Just as the mathematician behind the new proof worked with an AI model, I used Claude to write the code and run the computations for this page. My own small contribution is the circles, and the wish behind them: I want more people to understand this beautiful problem. Riemann's original framing, with the zeta function and its analytic continuation, can look forbidding. The beauty underneath it is not.</p>
   <p>Complex numbers are one of the main building blocks of mathematics, and they are not mysterious: they are the ordinary numbers plus one quarter-turn. With that single idea, a compass and a row of prime circles, you can see what the most famous problem in mathematics is really about.</p>
 </section>
 
+<section aria-labelledby="s8">
+  <div class="step">NOTES · FOR THE MATHEMATICALLY CURIOUS</div>
+  <h2 id="s8">What exactly is computed</h2>
+  <p>This page makes no new theorem and no new proof. It is a geometric encoding of known prime-sum mathematics that makes the role of the zeta zeros visible.</p>
+  <div class="formula" style="white-space:normal">
+  Circles: radius p for every prime p ≥ 3, standing on one line, each touching the next. Touching gives a horizontal step 2√(pₖpₖ₊₁), so<br>
+  xₙ = Σ 2√(pₖpₖ₊₁) = 2·Σ<sub>p≤pₙ</sub> p − pₙ − 3 − Cₙ, &nbsp; with Cₙ = Σ(√pₖ₊₁ − √pₖ)².<br>
+  Since (√q − √p)² ≤ q − p, the tangency correction satisfies 0 ≤ Cₙ ≤ pₙ.<br><br>
+  Smooth curve: 2·li(y²) − y − 3, from Σ<sub>p≤y</sub> p ∼ li(y²).<br>
+  Wobble: E(y) = x − (2·li(y²) − y − 3) = 2·(Σ<sub>p≤y</sub> p − li(y²)) + O(y).<br><br>
+  RH ⟺ π(y) = li(y) + O(y<sup>1/2+ε</sup>) (von Koch). Partial summation turns this into Σ<sub>p≤y</sub> p = li(y²) + O(y<sup>3/2+ε</sup>) and back again. The O(y) tangency term is far smaller, so<br>
+  RH ⟺ E(y) = O(y<sup>3/2+ε</sup>) for every ε &gt; 0.<br><br>
+  Waves: by the explicit formula, a zero ρ = β + iγ adds a term of size y<sup>1+β</sup>, oscillating like cos(γ·ln y + φ). Scaled by y<sup>3/2</sup>/ln y, its amplitude goes like y<sup>β−1/2</sup>: constant on the critical line. The wheels in step 4 use the amplitude 4/|ρ + 1| predicted for β = ½.
+  </div>
+  <p class="cap">All numbers can be reproduced with the scripts in the GitHub repository (primes up to 10⁸, zeros up to height 300).</p>
+</section>
+
 <footer>
-  <p>Concept and construction: Sanjin Redzic. Numerics computed for every prime up to 10⁸; zeros from Odlyzko's tables and a Riemann–Siegel computation. Part of the <a href="https://github.com/ninjas1337/Prime-Helix">Prime Helix</a> project.</p>
+  <p>Concept and construction: Sanjin Redzic. Numerics computed for every prime up to 10⁸; zeros from Odlyzko's tables and a Riemann–Siegel computation. Source code and data: <a href="https://github.com/ninjas1337/Riemann-Hypothesis-Drawn-with-Circles">GitHub</a>. Part of the <a href="https://github.com/ninjas1337/Prime-Helix">Prime Helix</a> project.</p>
   <ol>
     <li>B. Riemann, Ueber die Anzahl der Primzahlen unter einer gegebenen Grösse, <i>Monatsber. Berliner Akad.</i>, 1859.</li>
     <li>H. von Koch, Sur la distribution des nombres premiers, <i>Acta Math.</i> 24 (1901), 159–182.</li>
     <li>H. Davenport, <i>Multiplicative Number Theory</i>, 3rd ed., Springer, 2000, ch. 17–18.</li>
     <li>J. E. Littlewood, Sur la distribution des nombres premiers, <i>C. R. Acad. Sci. Paris</i> 158 (1914), 1869–1872.</li>
+    <li>D. Platt &amp; T. Trudgian, The Riemann hypothesis is true up to 3·10¹², <i>Bull. London Math. Soc.</i> 53 (2021), 792–797.</li>
     <li>A. M. Odlyzko, Tables of zeros of the Riemann zeta function.</li>
     <li>H. Cramér, On the order of magnitude of the difference between consecutive prime numbers, <i>Acta Arith.</i> 2 (1936), 23–46.</li>
     <li>Science News, “Math’s holy grail, the Riemann hypothesis, appears solved with AI’s help”, November 2026.</li>
