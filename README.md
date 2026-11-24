@@ -15,6 +15,13 @@ The answer converges to $1/\sqrt{2} = \cos(45°)$, set by the helix geometry and
 
 ## Interactive Visualizations
 
+### Start here: The Riemann Hypothesis, Drawn with Circles
+An explainer for a general audience. Circles of prime radius stand on a line, each touching the next; their centres wobble around a smooth curve, the wobble's hidden frequencies are the zeros of the zeta function, and the Riemann Hypothesis says the wobble never outgrows its band.
+
+`rh_circles.html`
+
+---
+
 All visualizations are standalone HTML files. No build step: just open them in a browser.
 
 ### Prime Helix: 3D Visualization
@@ -114,6 +121,7 @@ prime-helix/
 ├── Prime Helix Paper v1.pdf       # Version 1, for reference
 ├── prime_helix_paper.tex          # LaTeX source, version 2
 ├── index.html                     # Landing page
+├── rh_circles.html                # Explainer: RH drawn with circles
 ├── prime_helix.html               # 3D helix visualization
 ├── prime_helix_ratio.html         # Two-particle convergence
 ├── prime_phase_function.html      # Phasor circle + phase function
