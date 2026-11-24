@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Prime Loxodrome on the Riemann Sphere</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: #0a0a0f;
+    color: #e0ddd5;
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    overflow: hidden;
+  }
+  #canvas-container { position: fixed; inset: 0; z-index: 1; touch-action: none; }
+
+  #ui-overlay { position: fixed; top: 0; left: 0; z-index: 10; padding: 20px; pointer-events: none; max-width: 100%; }
+  #ui-overlay > * { pointer-events: auto; }
+  .back { font-size: 11px; color: #b8a4ff; text-decoration: none; display: inline-block; margin-bottom: 8px; }
+  .back:hover { text-decoration: underline; }
+  h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 700; color: #f0ece2;
+       margin-bottom: 4px; text-shadow: 0 0 40px rgba(180,160,255,0.3); }
+  .subtitle { font-size: 11px; color: #8a8578; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+
+  .controls { background: rgba(15,15,22,0.88); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.07);
+              border-radius: 12px; padding: 14px 18px; width: 310px; max-width: calc(100vw - 40px); }
+  .control-group { margin-bottom: 12px; }
+  .control-group:last-child { margin-bottom: 0; }
+  label { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #9a9590;
+          letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+  label span.val { color: #d4cfc5; font-weight: 600; text-transform: none; font-variant-numeric: tabular-nums; }
+  input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; background: rgba(255,255,255,0.12);
+                        border-radius: 2px; outline: none; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+                        background: #b8a4ff; box-shadow: 0 0 8px rgba(184,164,255,0.4); }
+  input[type="range"]::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: #b8a4ff; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .btn { font-family: inherit; font-size: 10px; letter-spacing: 0.5px; padding: 5px 9px; border: 1px solid rgba(255,255,255,0.14);
+         border-radius: 6px; background: transparent; color: #a8a398; cursor: pointer; }
+  .btn:hover { border-color: rgba(184,164,255,0.5); color: #d8ccff; }
+  .btn.on { background: rgba(255,184,122,0.18); border-color: rgba(255,184,122,0.6); color: #ffd2a8; }
+  .btn.layer.active { background: rgba(184,164,255,0.15); border-color: rgba(184,164,255,0.4); color: #c8b8ff; }
+  .btn:focus-visible, input:focus-visible { outline: 2px solid #b8a4ff; outline-offset: 2px; }
+  .chip { font-size: 10px; padding: 2px 8px; border-radius: 999px; background: rgba(184,164,255,0.15); color: #c8b8ff; }
+  .chip.hit { background: #ffb87a; color: #1a1209; font-weight: 600; }
+
+  #side { position: fixed; top: 20px; right: 20px; z-index: 10; width: 250px; display: grid; gap: 10px; }
+  .panel { background: rgba(15,15,22,0.88); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.07);
+           border-radius: 12px; padding: 12px 14px; font-size: 11px; color: #8a8578; line-height: 1.6; }
+  .panel h2 { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #9a9590; font-weight: 400; margin-bottom: 6px; }
+  #walk2d { width: 100%; aspect-ratio: 1 / 1; display: block; background: #0d0d14; border-radius: 6px; }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-variant-numeric: tabular-nums; }
+  .kv b { color: #d4cfc5; font-weight: 600; text-align: right; }
+
+  #info-panel { position: fixed; bottom: 20px; left: 20px; z-index: 10; max-width: 380px; }
+  #info-panel .highlight { color: #c8b8ff; font-weight: 600; }
+  #info-panel .warm { color: #ffb87a; font-weight: 600; }
+
+  @media (max-width: 760px) {
+    #side { top: auto; bottom: 12px; right: 12px; width: 190px; }
+    #info-panel { display: none; }
+    .controls { width: 260px; }
+    h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="canvas-container"></div>
+
+<div id="ui-overlay">
+  <a class="back" href="index.html">← The Prime Helix</a>
+  <h1>Prime Loxodrome</h1>
+  <div class="subtitle">Primes at p<sup>−s</sup>, s = ½ + it, on the Riemann sphere</div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label for="t">Winding rate t <span class="val" id="t-val">15.0000</span></label>
+      <input type="range" id="t" min="5" max="50" step="0.0005" value="15">
+    </div>
+    <div class="control-group">
+      <div class="row">
+        <button class="btn" id="m1" type="button">−0.1</button>
+        <button class="btn" id="m2" type="button">−0.01</button>
+        <button class="btn" id="p2" type="button">+0.01</button>
+        <button class="btn" id="p1" type="button">+0.1</button>
+        <button class="btn" id="sweep" type="button">Sweep t</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>Jump to a zero γ <span class="chip" id="chip">between zeros</span></label>
+      <div class="row" id="zeros"></div>
+    </div>
+    <div class="control-group">
+      <label for="nsel">Primes up to N <span class="val" id="n-val">10⁵</span></label>
+      <input type="range" id="nsel" min="3" max="6" step="1" value="5">
+    </div>
+    <div class="control-group">
+      <label>Display</label>
+      <div class="row">
+        <button class="btn layer active" data-layer="points" type="button">Primes</button>
+        <button class="btn layer active" data-layer="spiral" type="button">Loxodrome</button>
+        <button class="btn layer active" data-layer="walk" type="button">Walk</button>
+        <button class="btn layer active" data-layer="wire" type="button">Sphere</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="side">
+  <div class="panel">
+    <h2>Walk in the plane</h2>
+    <canvas id="walk2d" aria-label="Walk W_t in the complex plane"></canvas>
+  </div>
+  <div class="panel kv">
+    <span>Nearest zero γ</span><b id="k-g">–</b>
+    <span>t − γ</span><b id="k-d">–</b>
+    <span>Circle radius 1/|t−γ|</span><b id="k-r">–</b>
+    <span>|W(N)|</span><b id="k-w">–</b>
+    <span>ln N (line length at γ)</span><b id="k-l">–</b>
+  </div>
+</div>
+
+<div id="info-panel" class="panel">
+  <span class="highlight">Prime points</span> sit at p<sup>−s</sup> = p<sup>−1/2</sup>e<sup>−it ln p</sup>: a logarithmic spiral in the plane, which stereographic projection turns into a <span class="highlight">loxodrome</span> winding into the pole <span class="warm">0</span> (bottom).<br>
+  <span class="warm">The walk</span> adds the arrows Λ(n)/√n·e<sup>−it ln n</sup> with the pole term of ζ removed. Between zeros it circles; at a zero it runs straight out from 0. A straight line through 0 maps to a <span class="highlight">meridian</span>, so at t = γ the walk climbs a meridian towards ∞ (top).<br>
+  Drag to orbit · scroll or pinch to zoom
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+const ZEROS = [14.134725, 21.022040, 25.010858, 30.424876, 32.935062, 37.586178, 40.918719, 43.327073, 48.005151, 49.773832];
+const NMAX = 1000000;
+const R0 = 4.0;        // scale of the prime spiral in the plane (display only; any scale keeps it a loxodrome)
+const WALK_SCALE = 0.3; // scale of the walk in the plane (a dilation keeps lines through 0 as lines through 0)
+
+/* ---------- primes and prime powers ---------- */
+const sv = new Uint8Array(NMAX + 1);
+const primes = [], pp = [];
+for (let i = 2; i <= NMAX; i++) {
+  if (!sv[i]) {
+    primes.push(i);
+    if (i * i <= NMAX) for (let j = i * i; j <= NMAX; j += i) sv[j] = 1;
+    const lp = Math.log(i); let q = i;
+    while (q <= NMAX) { pp.push([q, lp]); q *= i; }
+  }
+}
+pp.sort((a, b) => a[0] - b[0]);
+const P = primes.length, M = pp.length;
+const primesF = Float64Array.from(primes);
+const lnP = new Float64Array(P), rP = new Float64Array(P);
+for (let k = 0; k < P; k++) { lnP[k] = Math.log(primes[k]); rP[k] = R0 / Math.sqrt(primes[k]); }
+const nA = new Float64Array(M), lnA = new Float64Array(M), wA = new Float64Array(M), sqA = new Float64Array(M);
+for (let k = 0; k < M; k++) { const n = pp[k][0]; nA[k] = n; lnA[k] = Math.log(n); sqA[k] = Math.sqrt(n); wA[k] = pp[k][1] / sqA[k]; }
+function countLE(arr, N) { let lo = 0, hi = arr.length; while (lo < hi) { const m = (lo + hi) >> 1; if (arr[m] <= N) lo = m + 1; else hi = m; } return lo; }
+
+/* ---------- stereographic projection: 0 at the bottom pole, ∞ at the top ---------- */
+function stereo(u, v, out, o) {
+  const r2 = u * u + v * v, d = 1 + r2;
+  out[o] = 2 * u / d; out[o + 1] = (r2 - 1) / d; out[o + 2] = 2 * v / d;
+}
+
+/* ---------- three.js scene ---------- */
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0f);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.01, 100);
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+container.appendChild(renderer.domElement);
+
+const wire = new THREE.Mesh(new THREE.SphereGeometry(0.995, 36, 24),
+  new THREE.MeshBasicMaterial({ color: 0x2a2a44, wireframe: true, transparent: true, opacity: 0.18 }));
+scene.add(wire);
+function marker(color, y) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 12), new THREE.MeshBasicMaterial({ color })); m.position.set(0, y, 0); scene.add(m); return m; }
+marker(0xb8a4ff, -1); // 0
+marker(0xffb87a, 1);  // ∞
+// equator = unit circle |z| = 1
+const eq = new THREE.BufferGeometry().setFromPoints(Array.from({ length: 129 }, (_, i) => new THREE.Vector3(Math.cos(i / 128 * 2 * Math.PI), 0, Math.sin(i / 128 * 2 * Math.PI))));
+scene.add(new THREE.Line(eq, new THREE.LineBasicMaterial({ color: 0x55557a, transparent: true, opacity: 0.6 })));
+
+// prime points
+const pPos = new Float32Array(P * 3), pCol = new Float32Array(P * 3);
+const c = new THREE.Color();
+for (let k = 0; k < P; k++) { const f = Math.min(1, lnP[k] / Math.log(NMAX)); c.setHSL(0.72 - 0.62 * f, 0.65, 0.58); pCol.set([c.r, c.g, c.b], 3 * k); }
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
+const pMat = new THREE.PointsMaterial({ size: 0.014, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false });
+const pMesh = new THREE.Points(pGeo, pMat); scene.add(pMesh);
+
+// continuous loxodrome through the primes (x from 2 to N, log-spaced)
+const SP = 1200;
+const sPos = new Float32Array(SP * 3);
+const sGeo = new THREE.BufferGeometry(); sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+const sMesh = new THREE.Line(sGeo, new THREE.LineBasicMaterial({ color: 0x8f7fd6, transparent: true, opacity: 0.35 })); scene.add(sMesh);
+
+// the walk
+const WMAX = 20000;
+const wPos = new Float32Array(WMAX * 3), wCol = new Float32Array(WMAX * 3);
+const wGeo = new THREE.BufferGeometry();
+wGeo.setAttribute('position', new THREE.BufferAttribute(wPos, 3));
+wGeo.setAttribute('color', new THREE.BufferAttribute(wCol, 3));
+const wMesh = new THREE.Line(wGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.95 })); scene.add(wMesh);
+
+/* ---------- state ---------- */
+let t = 15, N = 100000;
+const walkRe = new Float64Array(M + 1), walkIm = new Float64Array(M + 1);
+let walkLen = 1;
+
+function computeWalk() {
+  const cnt = countLE(nA, N), dd = 0.25 + t * t;
+  let re = 0, im = 0; walkRe[0] = 0; walkIm[0] = 0;
+  for (let k = 0; k < cnt; k++) {
+    const a = -t * lnA[k], cs = Math.cos(a), sn = Math.sin(a);
+    re += wA[k] * cs; im += wA[k] * sn;
+    const cr = sqA[k] * cs - 1, ci = sqA[k] * sn;   // (n^{1/2-it} - 1)/(1/2 - it)
+    walkRe[k + 1] = re - (cr * 0.5 - ci * t) / dd;
+    walkIm[k + 1] = im - (cr * t + ci * 0.5) / dd;
+  }
+  walkLen = cnt + 1;
+}
+
+function rebuild() {
+  // prime points on the loxodrome
+  const np = countLE(primesF, N);
+  for (let k = 0; k < np; k++) { const a = -t * lnP[k]; stereo(rP[k] * Math.cos(a), rP[k] * Math.sin(a), pPos, 3 * k); }
+  pGeo.attributes.position.needsUpdate = true; pGeo.setDrawRange(0, np);
+  pMat.size = N >= 1e6 ? 0.008 : N >= 1e5 ? 0.011 : 0.016;
+  // continuous loxodrome
+  const l0 = Math.log(2), l1 = Math.log(N);
+  for (let i = 0; i < SP; i++) { const L = l0 + (l1 - l0) * i / (SP - 1), r = R0 * Math.exp(-0.5 * L), a = -t * L; stereo(r * Math.cos(a), r * Math.sin(a), sPos, 3 * i); }
+  sGeo.attributes.position.needsUpdate = true;
+  // walk
+  computeWalk();
+  const step = Math.max(1, Math.ceil(walkLen / WMAX)); let m = 0;
+  for (let k = 0; k < walkLen && m < WMAX; k += step) {
+    stereo(WALK_SCALE * walkRe[k], WALK_SCALE * walkIm[k], wPos, 3 * m);
+    c.setHSL(0.08, 0.95, 0.35 + 0.35 * k / walkLen); wCol.set([c.r, c.g, c.b], 3 * m); m++;
+  }
+  wGeo.attributes.position.needsUpdate = true; wGeo.attributes.color.needsUpdate = true; wGeo.setDrawRange(0, m);
+  draw2d(); stats();
+}
+
+/* ---------- 2D inset ---------- */
+const cv = document.getElementById('walk2d');
+function draw2d() {
+  const rect = cv.getBoundingClientRect(), d = devicePixelRatio || 1;
+  const W = Math.max(1, Math.round(rect.width * d)), H = Math.max(1, Math.round(rect.height * d));
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  const g = cv.getContext('2d'); g.clearRect(0, 0, W, H);
+  let x0 = 0, x1 = 0, y0 = 0, y1 = 0;
+  for (let k = 0; k < walkLen; k++) { const x = walkRe[k], y = walkIm[k]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const pad = 12 * d, span = Math.max(x1 - x0, y1 - y0, 1e-9), sc = (Math.min(W, H) - 2 * pad) / span;
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, X = x => W / 2 + (x - cx) * sc, Y = y => H / 2 - (y - cy) * sc;
+  g.strokeStyle = 'rgba(255,255,255,0.08)'; g.lineWidth = d;
+  g.beginPath(); g.moveTo(0, Y(0)); g.lineTo(W, Y(0)); g.moveTo(X(0), 0); g.lineTo(X(0), H); g.stroke();
+  const B = 32, stride = walkLen > 40000 ? 2 : 1;
+  for (let b = 0; b < B; b++) {
+    const i0 = Math.floor(b * (walkLen - 1) / B), i1 = Math.floor((b + 1) * (walkLen - 1) / B);
+    g.strokeStyle = `hsl(28, 95%, ${30 + 40 * b / B}%)`; g.lineWidth = d;
+    g.beginPath(); g.moveTo(X(walkRe[i0]), Y(walkIm[i0]));
+    for (let i = i0 + stride; i <= i1; i += stride) g.lineTo(X(walkRe[i]), Y(walkIm[i]));
+    g.lineTo(X(walkRe[i1]), Y(walkIm[i1])); g.stroke();
+  }
+  g.strokeStyle = '#c8b8ff'; g.beginPath(); g.arc(X(0), Y(0), 4 * d, 0, 2 * Math.PI); g.stroke();
+  g.fillStyle = '#ffb87a'; g.beginPath(); g.arc(X(walkRe[walkLen - 1]), Y(walkIm[walkLen - 1]), 4 * d, 0, 2 * Math.PI); g.fill();
+}
+
+function stats() {
+  let best = ZEROS[0]; for (const z of ZEROS) if (Math.abs(z - t) < Math.abs(best - t)) best = z;
+  const dl = t - best, ad = Math.abs(dl), lnN = Math.log(N);
+  document.getElementById('t-val').textContent = t.toFixed(4);
+  document.getElementById('k-g').textContent = best.toFixed(6);
+  document.getElementById('k-d').textContent = (dl >= 0 ? '+' : '−') + ad.toFixed(4);
+  document.getElementById('k-r').textContent = ad < 5e-4 ? '∞ (line)' : (1 / ad).toFixed(2);
+  document.getElementById('k-w').textContent = Math.hypot(walkRe[walkLen - 1], walkIm[walkLen - 1]).toFixed(2);
+  document.getElementById('k-l').textContent = lnN.toFixed(2);
+  const chip = document.getElementById('chip');
+  if (ad < 0.02) { chip.textContent = 'on a zero'; chip.classList.add('hit'); }
+  else { chip.textContent = ad * lnN < 2 * Math.PI ? 'near a zero' : 'between zeros'; chip.classList.remove('hit'); }
+  document.querySelectorAll('#zeros .btn').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.g - t) < 0.02));
+}
+
+/* ---------- controls ---------- */
+const slider = document.getElementById('t');
+let pending = 0;
+function setT(v, fromSlider) {
+  t = Math.min(50, Math.max(5, +v));
+  if (!fromSlider) slider.value = t;
+  if (!pending) pending = requestAnimationFrame(() => { pending = 0; rebuild(); });
+}
+slider.addEventListener('input', () => { stopSweep(); setT(slider.value, true); });
+[['m1', -0.1], ['m2', -0.01], ['p2', 0.01], ['p1', 0.1]].forEach(([id, dv]) => document.getElementById(id).addEventListener('click', () => { stopSweep(); setT(t + dv); }));
+const zb = document.getElementById('zeros');
+ZEROS.slice(0, 6).forEach((z, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.dataset.g = z; b.textContent = 'γ' + (i + 1); b.title = z.toFixed(6); b.addEventListener('click', () => { stopSweep(); setT(z); }); zb.appendChild(b); });
+const off = document.createElement('button'); off.type = 'button'; off.className = 'btn'; off.textContent = 't = 15'; off.addEventListener('click', () => { stopSweep(); setT(15); }); zb.appendChild(off);
+const nNames = { 3: '10³', 4: '10⁴', 5: '10⁵', 6: '10⁶' };
+document.getElementById('nsel').addEventListener('input', function () { N = Math.pow(10, +this.value); document.getElementById('n-val').textContent = nNames[this.value]; setT(t); });
+document.querySelectorAll('.btn.layer').forEach(b => b.addEventListener('click', function () {
+  const on = this.classList.toggle('active'), L = this.dataset.layer;
+  if (L === 'points') pMesh.visible = on; if (L === 'spiral') sMesh.visible = on; if (L === 'walk') wMesh.visible = on; if (L === 'wire') wire.visible = on;
+}));
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let sweeping = false, last = 0;
+function tick(ts) {
+  if (!sweeping) return;
+  const dt = last ? Math.min(0.05, (ts - last) / 1000) : 0; last = ts;
+  let near = Infinity; for (const z of ZEROS) near = Math.min(near, Math.abs(z - t));
+  let v = t + (near < 0.6 ? 0.12 : 0.9) * dt; if (v > 50) v = 5;
+  setT(v); requestAnimationFrame(tick);
+}
+function stopSweep() { sweeping = false; last = 0; document.getElementById('sweep').textContent = 'Sweep t'; }
+document.getElementById('sweep').addEventListener('click', () => {
+  if (sweeping) { stopSweep(); return; }
+  if (reduce) { setT(t + 0.1); return; }
+  sweeping = true; document.getElementById('sweep').textContent = 'Pause'; requestAnimationFrame(tick);
+});
+
+/* ---------- camera orbit (mouse and touch) ---------- */
+let orbit = { theta: 0.6, phi: 1.15, radius: 3.4 }, dragging = false, prev = { x: 0, y: 0 }, autoRotate = true, pinch = 0;
+function updateCamera() {
+  const st = Math.sin(orbit.phi);
+  camera.position.set(orbit.radius * st * Math.sin(orbit.theta), orbit.radius * Math.cos(orbit.phi), orbit.radius * st * Math.cos(orbit.theta));
+  camera.lookAt(0, 0, 0);
+}
+updateCamera();
+const el = renderer.domElement;
+el.addEventListener('pointerdown', e => { dragging = true; autoRotate = false; prev = { x: e.clientX, y: e.clientY }; el.setPointerCapture(e.pointerId); });
+el.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  orbit.theta -= (e.clientX - prev.x) * 0.005;
+  orbit.phi = Math.max(0.08, Math.min(Math.PI - 0.08, orbit.phi - (e.clientY - prev.y) * 0.005));
+  prev = { x: e.clientX, y: e.clientY }; updateCamera();
+});
+el.addEventListener('pointerup', () => dragging = false);
+el.addEventListener('wheel', e => { orbit.radius = Math.max(1.15, Math.min(10, orbit.radius + e.deltaY * 0.002)); updateCamera(); }, { passive: true });
+el.addEventListener('touchmove', e => {
+  if (e.touches.length !== 2) return;
+  const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  if (pinch) { orbit.radius = Math.max(1.15, Math.min(10, orbit.radius * pinch / d)); updateCamera(); }
+  pinch = d;
+}, { passive: true });
+el.addEventListener('touchend', () => pinch = 0);
+
+function animate() {
+  requestAnimationFrame(animate);
+  if (autoRotate && !reduce) { orbit.theta += 0.0015; updateCamera(); }
+  renderer.render(scene, camera);
+}
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); draw2d(); });
+
+rebuild();
+animate();
+})();
+</script>
+</body>
+</html>

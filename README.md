@@ -63,9 +63,16 @@ Wind each prime power n by the angle t·ln n, give it length Λ(n)/√n and chai
 ---
 
 ### Riemann Vortex
-The prime helix spiraling onto the Riemann sphere via logarithmic projection.
+The prime helix spiraling onto the Riemann sphere via logarithmic projection. The angle is still p mod 2π (linear winding), so the patterns come from the gaps, not the zeros.
 
 `optimized_riemann_sphere.html`
+
+---
+
+### Prime Loxodrome
+Primes placed at p^(−s), s = ½ + it, on the Riemann sphere: a loxodrome winding into 0. The prime walk circles between zeros and climbs a meridian towards ∞ at each zero (lines through 0 map to meridians under stereographic projection).
+
+`prime_loxodrome_sphere.html`
 
 ## The Paper
 
@@ -112,6 +119,7 @@ prime-helix/
 ├── prime_phase_function.html      # Phasor circle + phase function
 ├── prime_log_walk.html            # Logarithmic walk at the zeta zeros
 ├── optimized_riemann_sphere.html  # Riemann vortex
+├── prime_loxodrome_sphere.html    # Primes at p^(-s) on the Riemann sphere
 ├── analysis/
 │   ├── prime_helix_checks.py      # All numerical checks in the paper
 │   └── results.txt                # Output of the script
