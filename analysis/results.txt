@@ -1,0 +1,38 @@
+1. Decay of delta(N) = R(N) - 1/sqrt(2)
+        N         p_N      R(N)     delta  delta*ln^2 p  (ln p)^2/sqrt p
+     8000       81799  0.719191   0.01208         1.546          0.44741
+    10000      104729  0.718783   0.01168         1.560          0.41287
+   100000     1299709  0.715198   0.00809         1.604          0.17384
+  1000000    15485863  0.713114   0.00601         1.646          0.06965
+  5000000    86028121  0.712119   0.00501         1.673          0.03599
+
+2. Chord shapes on the helix (cos t, sin t, t), primes > 3 up to 10^7
+chords: 664576, distinct gaps: 74, distinct (length, tilt) shapes: 74
+azimuth p mod 2pi, 12 bins relative to mean: 1.002 0.992 0.992 1.007 0.989 1.011 1.016 1.011 1.001 0.988 1.007 0.985
+
+3. Turn angles and repeated gaps (n in (1000, 10^7])
+           real: turn-angle % per 15 deg bin: 61.76 18.65 12.81  4.19  2.59
+         cramer: turn-angle % per 15 deg bin: 48.07 15.43 22.63 10.26  3.61
+ granville_2357: turn-angle % per 15 deg bin: 60.92 18.80 13.05  4.37  2.87
+repeat ratio P(g,g)/P(g)^2 for g = 6, 12, 18, 24, 30
+  real primes        : 0.818 0.848 0.825 0.796 0.798
+  Cramer (1 run)     : 1.010 0.988 1.012 1.135 1.039
+  Granville to 7     : 0.831+-0.007 0.885+-0.011 0.855+-0.010 0.844+-0.031 0.956+-0.029
+  Granville to 13    : 0.827+-0.008 0.846+-0.011 0.820+-0.010 0.857+-0.020 0.919+-0.036
+
+4. Logarithmic-winding walk H(t) = sum Lambda(n) n^(-1/2 - i t), pole term removed
+peak t  vs  known zero gamma
+    14.14    14.134725
+    21.02    21.022040
+    25.02    25.010858
+    30.42    30.424876
+    32.94    32.935062
+    37.58    37.586178
+    40.91    40.918719
+    43.34    43.327073
+    47.98    48.005151
+    49.79    49.773832
+
+Walk W_t(N) for N = 10^5 (end point; -ln N = -11.51)
+  t = 14.134725: W(N) = -10.89 +0.18i, max |W| = 11.36
+  t = 15.000000: W(N) = 0.82 +2.34i, max |W| = 3.12
