@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Riemann Hypothesis, Drawn with Circles</title>
-<meta name="description" content="The most famous problem in mathematics, explained with circles of prime radius. Interactive, no formulas needed.">
+<meta name="description" content="The most famous problem in mathematics, explained with circles, a little rotation, and the hidden music of the prime numbers.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="The Riemann Hypothesis, Drawn with Circles">
 <meta property="og:description" content="One circle for every prime. Their centres wobble, the wobble hides the zeta zeros, and the Riemann Hypothesis says how big the wobble can get.">
@@ -76,6 +76,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .callout{border-left:4px solid var(--prime);background:var(--prime-soft);padding:12px 16px;border-radius:0 8px 8px 0;max-width:68ch}
 .callout p{max-width:none}
 .formula{font-family:var(--font-mono);font-size:.95rem;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;max-width:68ch}
+.reveal{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;gap:10px;max-width:68ch}
+.reveal .big{font-family:var(--font-display);font-size:clamp(2rem,6vw,2.8rem);text-align:center;line-height:1.1}
+.reveal .big .half{color:var(--accent)}.reveal .big .gam{color:var(--prime)}
+.reveal ul{margin:0;padding-left:20px;display:grid;gap:4px}
 footer{border-top:1px solid var(--line);padding-top:20px;font-size:.88rem;color:var(--muted);display:grid;gap:10px}
 footer ol{margin:0;padding-left:20px}
 footer li{margin-bottom:4px}
@@ -88,7 +92,7 @@ a{color:var(--accent)}
 
 <header>
   <h1>The Riemann Hypothesis, <em>drawn with circles</em></h1>
-  <p class="lede">The most famous problem in mathematics, explained with a compass, a ruler and one idea about rotation. No formulas needed until the very end.</p>
+  <p class="lede">The most famous problem in mathematics, explained with circles, a little rotation, and the hidden music of the prime numbers. No formulas needed until the very end.</p>
   <p class="byline">By Sanjin Redzic · Interactive: every figure responds to the controls</p>
 </header>
 
@@ -190,6 +194,15 @@ a{color:var(--accent)}
   </div>
   <div class="callout">
     <p><b>The Riemann Hypothesis, in circle language:</b> however far you go, the wobble of the prime circles never grows faster than y<sup>1.5</sup>, the size of the band you see here. It may creep outward extremely slowly, by logarithmic factors, but never by a power of y. The primes are as regular as they can possibly be.</p>
+  </div>
+  <div class="reveal" aria-label="The Riemann Hypothesis in one formula">
+    <div class="big">ρ = <span class="half">½</span> + i<span class="gam">γ</span></div>
+    <ul>
+      <li><b style="color:var(--accent)">½</b> controls growth: the same for every wheel.</li>
+      <li><b style="color:var(--prime)">γ</b> controls rotation: every zero turns at its own speed.</li>
+      <li>All the γ's together make the music of the primes.</li>
+      <li>The Riemann Hypothesis says every non-trivial zero has the same ½.</li>
+    </ul>
   </div>
   <div class="formula">all zeros on Re(s) = ½  ⟺  wobble grows no faster than y<sup>1.5+ε</sup>, for every ε &gt; 0</div>
   <p class="cap">Where does 1.5 come from? Helge von Koch showed in 1901 that RH is equivalent to the error in <i>counting</i> primes staying near √y = y<sup>0.5</sup>. The circles <i>add up</i> the primes, each about as large as y, which brings one more factor of y: y<sup>0.5</sup> · y = y<sup>1.5</sup>. The tangency geometry adds at most y, far less. The short derivation is in the notes at the end.</p>
