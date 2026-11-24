@@ -161,6 +161,7 @@ a{color:var(--accent)}
     <p class="cap">Dashed lines: the zeros of the Riemann zeta function. Method: the scaled wobble for primes up to 10⁷, resampled on an even grid in ln y, Hann window, direct Fourier transform. The random numbers (Cramér's model) have the same density as the primes and go through exactly the same steps.</p>
   </div>
   <p>Those numbers are famous. They are the <b>zeros of the Riemann zeta function</b>, found by Bernhard Riemann in 1859. Swap the primes for random numbers of the same density and the notes vanish. The music belongs to the primes.</p>
+  <p>Why the logarithm? Each zero adds a wave whose phase turns like γ·ln y. On a logarithmic scale that is a steady rotation, so γ acts exactly like a frequency.</p>
   <p>Each note behaves like a wheel turning at its own speed. Put wheels on wheels, one per note, and follow the tip: it reproduces the wobble. The more wheels, the closer the match.</p>
   <div class="panel">
     <canvas id="cv4b" class="c-wide" role="img" aria-label="The wobble rebuilt from a chosen number of wheels compared with the measured wobble"></canvas>
@@ -176,6 +177,9 @@ a{color:var(--accent)}
   <div class="step">STEP 5 · WHAT THE HYPOTHESIS SAYS</div>
   <h2 id="s5">All wheels stay the same size</h2>
   <p>Riemann noticed that his zeros all seemed to lie on one straight line in the plane of complex numbers, the <i>critical line</i>. His hypothesis is that <b>every</b> zero lies there, infinitely many of them.</p>
+  <p>One small formula says it all. A zero is a complex number ρ = β + iγ, and it adds to the wobble a wave built from</p>
+  <div class="formula">y<sup>ρ</sup> = y<sup>β</sup> · e<sup>iγ·ln y</sup></div>
+  <p>Don't worry about the formula. It says something wonderfully simple: <b>γ controls how fast the wheel turns, and β controls how its size changes.</b> γ is rotation, β is growth. On the critical line, β = ½ for every zero.</p>
   <p>In the circle picture this has a simple meaning. After scaling the wobble by y<sup>1.5</sup>, a zero on the line is a wheel that keeps its size, apart from slow logarithmic factors. A zero off the line would be a wheel whose size changes like a power of y, and because zeros come in mirror pairs on either side of the line, one of the pair would always be a wheel that keeps growing. Try it: move the first zero off the line and watch what happens to the wobble far out.</p>
   <div class="panel">
     <canvas id="cv5" class="c-wide" role="img" aria-label="Model wobble out to ten to the forty, with the first zero optionally moved off the critical line"></canvas>
@@ -188,7 +192,7 @@ a{color:var(--accent)}
     <p><b>The Riemann Hypothesis, in circle language:</b> however far you go, the wobble of the prime circles never grows faster than y<sup>1.5</sup>, the size of the band you see here. It may creep outward extremely slowly, by logarithmic factors, but never by a power of y. The primes are as regular as they can possibly be.</p>
   </div>
   <div class="formula">all zeros on Re(s) = ½  ⟺  wobble grows no faster than y<sup>1.5+ε</sup>, for every ε &gt; 0</div>
-  <p class="cap">This follows from a classical theorem by Helge von Koch (1901) about counting primes, carried over to the circles; the short derivation is in the notes at the end.</p>
+  <p class="cap">Where does 1.5 come from? Helge von Koch showed in 1901 that RH is equivalent to the error in <i>counting</i> primes staying near √y = y<sup>0.5</sup>. The circles <i>add up</i> the primes, each about as large as y, which brings one more factor of y: y<sup>0.5</sup> · y = y<sup>1.5</sup>. The tangency geometry adds at most y, far less. The short derivation is in the notes at the end.</p>
 </section>
 
 <!-- STEP 6 -->
